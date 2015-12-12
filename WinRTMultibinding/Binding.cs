@@ -13,7 +13,7 @@ namespace WinRTMultibinding
         private EventHandler _computedValueChanged;
 
 
-        private object ComputedValue
+        object IMultibindingItem.ComputedValue
         {
             get
             {
@@ -24,8 +24,6 @@ namespace WinRTMultibinding
                 SetValue(ComputedValueProperty, value);
             }
         }
-
-        object IMultibindingItem.ComputedValue => ComputedValue;
 
 
         event EventHandler IMultibindingItem.ComputedValueChanged
@@ -43,7 +41,11 @@ namespace WinRTMultibinding
 
         void IMultibindingItem.Initialize(FrameworkElement targetElement)
         {
-            if (!String.IsNullOrEmpty(ElementName))
+            if (Source != null)
+            {
+                SubscribeToLoadedEvent(targetElement, SetBinding);
+            }
+            else if (!String.IsNullOrEmpty(ElementName))
             {
                 BindToElement(targetElement);
             }

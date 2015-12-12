@@ -5,7 +5,7 @@ namespace WinRTMultibinding.Interfaces
 {
     internal interface IMultibindingItem
     {
-        object ComputedValue { get; }
+        object ComputedValue { get; set; }
 
 
         event EventHandler ComputedValueChanged;

@@ -12,5 +12,14 @@ namespace WinRTMultibinding.Extensions
                 action(item);
             }
         }
+
+        public static void ForEach<T>(this IEnumerable<T> source, Action<T, int> action)
+        {
+            var index = 0;
+            foreach (var item in source)
+            {
+                action(item, index++);
+            }
+        }
     }
 }
