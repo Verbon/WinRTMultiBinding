@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>ba6a9f96-b22b-44e7-9ae6-7edbf8f3c4fe</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>WinRTMultibinding</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Binding.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\CollectionExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\EventsExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IMultibindingItem.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IMultivalueConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Multibinding.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)MultibindingHelper.cs" />
+  </ItemGroup>
+</Project>
