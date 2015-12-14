@@ -10,6 +10,8 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Binding.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DisableablePropertyChangedCallback.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Disposable\AnonymousDisposable.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\CollectionExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\EventsExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IMultibindingItem.cs" />

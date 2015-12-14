@@ -16,6 +16,7 @@ namespace WinRTMultibinding
         private static readonly DependencyProperty TargetPropertyValueProperty = DependencyProperty.Register("TargetPropertyValue", typeof (object), typeof (Multibinding), new PropertyMetadata(default(object), OnTargetPropertyValueChanged));
 
 
+        private static readonly DisableablePropertyChangedCallback DisableableTargetPropertyValueChangedCallback;
         private PropertyInfo _targetPropertyInfo;
         private FrameworkElement _associatedObject;
 
@@ -34,6 +35,11 @@ namespace WinRTMultibinding
 
         public List<Binding> Bindings { get; set; }
 
+
+        static Multibinding()
+        {
+            DisableableTargetPropertyValueChangedCallback = new DisableablePropertyChangedCallback(NotifyOnTargetPropertyValueChanged);
+        }
 
         public Multibinding()
         {
@@ -89,13 +95,10 @@ namespace WinRTMultibinding
             var convertedValue = Converter.Convert(values, _targetPropertyInfo.PropertyType, ConverterParameter, ConverterLanguage);
             convertedValue = ChangeType(convertedValue, _targetPropertyInfo.PropertyType);
 
-            _targetPropertyInfo.SetValue(_associatedObject, convertedValue);
-        }
-
-        private static void OnTargetPropertyValueChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        {
-            var multibinding = (Multibinding) d;
-            multibinding.AssociatedObjectOnTargetPropertyChanged();
+            using (DisableableTargetPropertyValueChangedCallback.Disable())
+            {
+                _targetPropertyInfo.SetValue(_associatedObject, convertedValue);
+            }
         }
 
         private void AssociatedObjectOnTargetPropertyChanged()
@@ -118,6 +121,17 @@ namespace WinRTMultibinding
             var isCompatible = valueType.IsSubclassOf(type);
 
             return isCompatible ? value : Convert.ChangeType(value, type);
+        }
+
+        private static void OnTargetPropertyValueChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            DisableableTargetPropertyValueChangedCallback.OnPropertyChanged(d, e);
+        }
+
+        private static void NotifyOnTargetPropertyValueChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            var multibinding = (Multibinding)d;
+            multibinding.AssociatedObjectOnTargetPropertyChanged();
         }
     }
 }
