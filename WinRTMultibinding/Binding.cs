@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Reflection;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Data;
+using Windows.UI.Xaml.Documents;
 using WinRTMultibinding.Extensions;
 using WinRTMultibinding.Interfaces;
 
@@ -54,7 +56,7 @@ namespace WinRTMultibinding
         {
             if (Source != null)
             {
-                SubscribeToLoadedEvent(targetElement, SetBinding);
+                SubscribeToLoadedEvent(targetElement, () => { });
             }
             else if (!String.IsNullOrEmpty(ElementName))
             {
@@ -83,7 +85,6 @@ namespace WinRTMultibinding
                     }
 
                     Source = element;
-                    SetBinding();
                 };
 
             SubscribeToLoadedEvent(targetElement, targetElementOnLoadedEventHandler);
@@ -101,8 +102,6 @@ namespace WinRTMultibinding
                         default:
                             throw new ArgumentException("Unable to bind to this kind of RelativeSource.");
                     }
-
-                    SetBinding();
                 };
 
             SubscribeToLoadedEvent(targetElement, targetElementOnLoadedEventHandler);
@@ -114,18 +113,12 @@ namespace WinRTMultibinding
                 {
                     Source = targetElement.DataContext;
                     targetElement.DataContextChanged += (sender, e) => Source = targetElement.DataContext;
-                    SetBinding();
                 };
 
             SubscribeToLoadedEvent(targetElement, targetElementOnLoadedEventHandler);
         }
 
-        private void SetBinding()
-        {
-            BindingOperations.SetBinding(this, ComputedValueProperty, this);
-        }
-
-        private static void SubscribeToLoadedEvent(FrameworkElement targetElement, Action loadedEventHandler)
+        private void SubscribeToLoadedEvent(FrameworkElement targetElement, Action loadedEventHandler)
         {
             RoutedEventHandler targetElementOnLoadedEventHandler = null;
 
@@ -133,9 +126,21 @@ namespace WinRTMultibinding
                 {
                     targetElement.Loaded -= targetElementOnLoadedEventHandler;
                     loadedEventHandler();
+
+                    if (!CheckIfCanApplyBinding(Source, Path.Path, Mode))
+                    {
+                        throw new InvalidOperationException($"Unable to attach binding to {Path.Path} property using {Mode} mode.");
+                    }
+
+                    SetBinding();
                 };
 
             targetElement.Loaded += targetElementOnLoadedEventHandler;
+        }
+
+        private void SetBinding()
+        {
+            BindingOperations.SetBinding(this, ComputedValueProperty, this);
         }
 
         private void OnComputedValueChanged()
@@ -152,6 +157,22 @@ namespace WinRTMultibinding
         {
             var binding = (Binding)d;
             binding.OnComputedValueChanged();
+        }
+
+        private static bool CheckIfCanApplyBinding(object source, string propertyPath, BindingMode mode)
+        {
+            var sourceProperty = source.GetType().GetRuntimeProperty(propertyPath);
+
+            switch (mode)
+            {
+                case BindingMode.OneTime:
+                case BindingMode.OneWay:
+                    return sourceProperty.CanRead();
+                case BindingMode.TwoWay:
+                    return sourceProperty.CanRead() && sourceProperty.CanWrite();
+            }
+
+            throw new ArgumentException("Unknown binding mode.", "mode");
         }
     }
 }

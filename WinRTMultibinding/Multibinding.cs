@@ -62,6 +62,11 @@ namespace WinRTMultibinding
         private void Initialize()
         {
             _targetPropertyInfo = _associatedObject.GetType().GetRuntimeProperty(BindingPropertyPath.Path);
+
+            if (!CheckIfCanApplyBinding(_targetPropertyInfo, Mode))
+            {
+                throw new InvalidOperationException($"Unable to attach binding to {_targetPropertyInfo.Name} property using {Mode} mode.");
+            }
             Bindings.ForEach(binding => binding.Mode = Mode);
             MultibindingItems.ForEach(item => item.Initialize(_associatedObject));
 
@@ -132,6 +137,20 @@ namespace WinRTMultibinding
         {
             var multibinding = (Multibinding)d;
             multibinding.AssociatedObjectOnTargetPropertyChanged();
+        }
+
+        private static bool CheckIfCanApplyBinding(PropertyInfo targetProperty, BindingMode mode)
+        {
+            switch (mode)
+            {
+                case BindingMode.OneTime:
+                case BindingMode.OneWay:
+                    return targetProperty.CanWrite();
+                case BindingMode.TwoWay:
+                    return targetProperty.CanRead() && targetProperty.CanWrite();
+            }
+
+            throw new ArgumentException("Unknown binding mode.", "mode");
         }
     }
 }
