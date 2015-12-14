@@ -99,7 +99,7 @@ namespace WinRTMultibinding
                         case RelativeSourceMode.Self:
                             return targetElement;
                         default:
-                            throw new ArgumentException("Unable to bind to this kind of RelativeSource.");
+                            throw new NotSupportedException("Unable to bind to this kind of RelativeSource.");
                     }
                 };
 
