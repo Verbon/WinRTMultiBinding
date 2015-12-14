@@ -10,6 +10,8 @@ namespace WinRTMultibinding
     {
         private static readonly DependencyProperty ComputedValueProperty = DependencyProperty.Register("ComputedValue", typeof (object), typeof (Binding), new PropertyMetadata(default(object), OnComputedValueChanged));
 
+
+        private static readonly DisableablePropertyChangedCallback DisableableComputedValueChangedCallback;
         private EventHandler _computedValueChanged;
 
 
@@ -21,7 +23,10 @@ namespace WinRTMultibinding
             }
             set
             {
-                SetValue(ComputedValueProperty, value);
+                using (DisableableComputedValueChangedCallback.Disable())
+                {
+                    SetValue(ComputedValueProperty, value);
+                }
             }
         }
 
@@ -36,6 +41,12 @@ namespace WinRTMultibinding
             {
                 _computedValueChanged -= value;
             }
+        }
+
+
+        static Binding()
+        {
+            DisableableComputedValueChangedCallback = new DisableablePropertyChangedCallback(NotifyOnComputedValueChanged);
         }
 
 
@@ -59,17 +70,6 @@ namespace WinRTMultibinding
             }
         }
 
-
-        private static void OnComputedValueChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        {
-            var binding = (Binding) d;
-            binding.OnComputedValueChanged();
-        }
-
-        private void OnComputedValueChanged()
-        {
-            _computedValueChanged.RaiseEvent(this);
-        }
 
         private void BindToElement(FrameworkElement targetElement)
         {
@@ -136,6 +136,22 @@ namespace WinRTMultibinding
                 };
 
             targetElement.Loaded += targetElementOnLoadedEventHandler;
+        }
+
+        private void OnComputedValueChanged()
+        {
+            _computedValueChanged.RaiseEvent(this);
+        }
+
+        private static void OnComputedValueChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            DisableableComputedValueChangedCallback.OnPropertyChanged(d, e);
+        }
+
+        private static void NotifyOnComputedValueChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            var binding = (Binding)d;
+            binding.OnComputedValueChanged();
         }
     }
 }
