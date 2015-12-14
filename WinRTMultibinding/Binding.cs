@@ -56,7 +56,7 @@ namespace WinRTMultibinding
         {
             if (Source != null)
             {
-                SubscribeToLoadedEvent(targetElement, () => { });
+                SetBinding(targetElement);
             }
             else if (!String.IsNullOrEmpty(ElementName))
             {
@@ -75,7 +75,7 @@ namespace WinRTMultibinding
 
         private void BindToElement(FrameworkElement targetElement)
         {
-            Action targetElementOnLoadedEventHandler = () =>
+            Func<object> sourceSelector = () =>
                 {
                     var element = targetElement.FindName(ElementName) as FrameworkElement;
 
@@ -84,48 +84,52 @@ namespace WinRTMultibinding
                         throw new ArgumentException("Element with the specified name not found.");
                     }
 
-                    Source = element;
+                    return element;
                 };
 
-            SubscribeToLoadedEvent(targetElement, targetElementOnLoadedEventHandler);
+            SetBinding(targetElement, sourceSelector);
         }
 
         private void BindToRelativeSource(FrameworkElement targetElement)
         {
-            Action targetElementOnLoadedEventHandler = () =>
+            Func<object> sourceSelector = () =>
                 {
                     switch (RelativeSource.Mode)
                     {
                         case RelativeSourceMode.Self:
-                            Source = targetElement;
-                            break;
+                            return targetElement;
                         default:
                             throw new ArgumentException("Unable to bind to this kind of RelativeSource.");
                     }
                 };
 
-            SubscribeToLoadedEvent(targetElement, targetElementOnLoadedEventHandler);
+            SetBinding(targetElement, sourceSelector);
         }
 
         private void BindToDataContext(FrameworkElement targetElement)
         {
-            Action targetElementOnLoadedEventHandler = () =>
+            Func<object> sourceSelector = () =>
                 {
-                    Source = targetElement.DataContext;
                     targetElement.DataContextChanged += (sender, e) => Source = targetElement.DataContext;
+                    return targetElement.DataContext;
                 };
 
-            SubscribeToLoadedEvent(targetElement, targetElementOnLoadedEventHandler);
+            SetBinding(targetElement, sourceSelector);
         }
 
-        private void SubscribeToLoadedEvent(FrameworkElement targetElement, Action loadedEventHandler)
+        private void SetBinding(FrameworkElement targetElement)
+        {
+            SetBinding(targetElement, () => Source);
+        }
+
+        private void SetBinding(FrameworkElement targetElement, Func<object> sourceSelector)
         {
             RoutedEventHandler targetElementOnLoadedEventHandler = null;
 
             targetElementOnLoadedEventHandler += (sender, e) =>
                 {
                     targetElement.Loaded -= targetElementOnLoadedEventHandler;
-                    loadedEventHandler();
+                    Source = sourceSelector();
 
                     if (!CheckIfCanApplyBinding(Source, Path.Path, Mode))
                     {

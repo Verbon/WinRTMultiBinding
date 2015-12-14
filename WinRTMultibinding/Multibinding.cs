@@ -120,10 +120,25 @@ namespace WinRTMultibinding
             MultibindingItems.ForEach((item, index) => item.ComputedValue = values[index]);
         }
 
+        private static bool CheckIfCanApplyBinding(PropertyInfo targetProperty, BindingMode mode)
+        {
+            switch (mode)
+            {
+                case BindingMode.OneTime:
+                case BindingMode.OneWay:
+                    return targetProperty.CanWrite();
+                case BindingMode.TwoWay:
+                    return targetProperty.CanRead() && targetProperty.CanWrite();
+            }
+
+            throw new ArgumentException("Unknown binding mode.", "mode");
+        }
+
         private static object ChangeType(object value, Type type)
         {
-            var valueType = value.GetType().GetTypeInfo();
-            var isCompatible = valueType.IsSubclassOf(type);
+            var valueType = value.GetType();
+            var valueTypeInfo = valueType.GetTypeInfo();
+            var isCompatible = valueType == type || valueTypeInfo.IsSubclassOf(type);
 
             return isCompatible ? value : Convert.ChangeType(value, type);
         }
@@ -137,20 +152,6 @@ namespace WinRTMultibinding
         {
             var multibinding = (Multibinding)d;
             multibinding.AssociatedObjectOnTargetPropertyChanged();
-        }
-
-        private static bool CheckIfCanApplyBinding(PropertyInfo targetProperty, BindingMode mode)
-        {
-            switch (mode)
-            {
-                case BindingMode.OneTime:
-                case BindingMode.OneWay:
-                    return targetProperty.CanWrite();
-                case BindingMode.TwoWay:
-                    return targetProperty.CanRead() && targetProperty.CanWrite();
-            }
-
-            throw new ArgumentException("Unknown binding mode.", "mode");
         }
     }
 }
