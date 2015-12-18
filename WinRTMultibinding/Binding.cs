@@ -2,7 +2,6 @@
 using System.Reflection;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Documents;
 using WinRTMultibinding.Extensions;
 using WinRTMultibinding.Interfaces;
 
@@ -152,17 +151,6 @@ namespace WinRTMultibinding
             _computedValueChanged.RaiseEvent(this);
         }
 
-        private static void OnComputedValueChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        {
-            DisableableComputedValueChangedCallback.OnPropertyChanged(d, e);
-        }
-
-        private static void NotifyOnComputedValueChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        {
-            var binding = (Binding)d;
-            binding.OnComputedValueChanged();
-        }
-
         private static bool CheckIfCanApplyBinding(object source, string propertyPath, BindingMode mode)
         {
             var sourceProperty = source.GetType().GetRuntimeProperty(propertyPath);
@@ -177,6 +165,17 @@ namespace WinRTMultibinding
             }
 
             throw new ArgumentException("Unknown binding mode.", "mode");
+        }
+
+        private static void OnComputedValueChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            DisableableComputedValueChangedCallback.OnPropertyChanged(d, e);
+        }
+
+        private static void NotifyOnComputedValueChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            var binding = (Binding)d;
+            binding.OnComputedValueChanged();
         }
     }
 }
