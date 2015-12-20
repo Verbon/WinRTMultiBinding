@@ -17,6 +17,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\ReflectionExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IMultibindingItem.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IMultivalueConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IOneWayMultibindingItem.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IOneWayToSourceMultibindingItem.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Multibinding.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MultibindingHelper.cs" />
   </ItemGroup>

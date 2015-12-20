@@ -7,47 +7,42 @@ using WinRTMultibinding.Interfaces;
 
 namespace WinRTMultibinding
 {
-    public class Binding : Windows.UI.Xaml.Data.Binding, IMultibindingItem
+    public class Binding : Windows.UI.Xaml.Data.Binding, IOneWayMultibindingItem, IOneWayToSourceMultibindingItem
     {
-        private static readonly DependencyProperty ComputedValueProperty = DependencyProperty.Register("ComputedValue", typeof (object), typeof (Binding), new PropertyMetadata(default(object), OnComputedValueChanged));
+        private static readonly DependencyProperty BindingValueProperty = DependencyProperty.Register("BindingValue", typeof (object), typeof (Binding), new PropertyMetadata(default(object), OnBindingValueChanged));
 
 
-        private static readonly DisableablePropertyChangedCallback DisableableComputedValueChangedCallback;
-        private EventHandler _computedValueChanged;
+        private static readonly DisableablePropertyChangedCallback DisableableBindingValueChangedCallback;
+        private EventHandler _bindingValueChanged;
 
 
-        object IMultibindingItem.ComputedValue
-        {
-            get
-            {
-                return GetValue(ComputedValueProperty);
-            }
-            set
-            {
-                using (DisableableComputedValueChangedCallback.Disable())
-                {
-                    SetValue(ComputedValueProperty, value);
-                }
-            }
-        }
+        object IOneWayMultibindingItem.SourcePropertyValue => GetValue(BindingValueProperty);
+
+        Type IOneWayToSourceMultibindingItem.SourcePropertyType => GetValue(BindingValueProperty).GetType();
 
 
-        event EventHandler IMultibindingItem.ComputedValueChanged
+        event EventHandler IOneWayMultibindingItem.SourcePropertyValueChanged
         {
             add
             {
-                _computedValueChanged += value;
+                _bindingValueChanged += value;
             }
             remove
             {
-                _computedValueChanged -= value;
+                _bindingValueChanged -= value;
             }
         }
 
 
         static Binding()
         {
-            DisableableComputedValueChangedCallback = new DisableablePropertyChangedCallback(NotifyOnComputedValueChanged);
+            DisableableBindingValueChangedCallback = new DisableablePropertyChangedCallback(NotifyOnBindingValueChanged);
+        }
+
+        public Binding()
+        {
+            Mode = default(BindingMode);
+            UpdateSourceTrigger = UpdateSourceTrigger.Default;
         }
 
 
@@ -55,9 +50,9 @@ namespace WinRTMultibinding
         {
             if (Source != null)
             {
-                SetBinding(targetElement);
+                SetBinding(() => Source);
             }
-            else if (!String.IsNullOrEmpty(ElementName))
+            else if (!String.IsNullOrWhiteSpace(ElementName))
             {
                 BindToElement(targetElement);
             }
@@ -71,6 +66,11 @@ namespace WinRTMultibinding
             }
         }
 
+        void IOneWayToSourceMultibindingItem.OnTargetPropertyValueChanged(object newSourcePropertyValue)
+        {
+            SetBindingValue(newSourcePropertyValue);
+        }
+
 
         private void BindToElement(FrameworkElement targetElement)
         {
@@ -80,13 +80,13 @@ namespace WinRTMultibinding
 
                     if (element == null)
                     {
-                        throw new ArgumentException("Element with the specified name not found.");
+                        throw new ArgumentException("Element with the specified name not found.", ElementName);
                     }
 
                     return element;
                 };
 
-            SetBinding(targetElement, sourceSelector);
+            SetBinding(sourceSelector);
         }
 
         private void BindToRelativeSource(FrameworkElement targetElement)
@@ -102,7 +102,7 @@ namespace WinRTMultibinding
                     }
                 };
 
-            SetBinding(targetElement, sourceSelector);
+            SetBinding(sourceSelector);
         }
 
         private void BindToDataContext(FrameworkElement targetElement)
@@ -113,42 +113,27 @@ namespace WinRTMultibinding
                     return targetElement.DataContext;
                 };
 
-            SetBinding(targetElement, sourceSelector);
+            SetBinding(sourceSelector);
         }
 
-        private void SetBinding(FrameworkElement targetElement)
+        private void SetBinding(Func<object> sourceSelector)
         {
-            SetBinding(targetElement, () => Source);
-        }
+            Source = sourceSelector();
 
-        private void SetBinding(FrameworkElement targetElement, Func<object> sourceSelector)
-        {
-            RoutedEventHandler targetElementOnLoadedEventHandler = null;
+            if (!CheckIfCanApplyBinding(Source, Path.Path, Mode))
+            {
+                throw new InvalidOperationException($"Unable to attach binding to {Path.Path} property using {Mode} mode.");
+            }
 
-            targetElementOnLoadedEventHandler += (sender, e) =>
-                {
-                    targetElement.Loaded -= targetElementOnLoadedEventHandler;
-                    Source = sourceSelector();
-
-                    if (!CheckIfCanApplyBinding(Source, Path.Path, Mode))
-                    {
-                        throw new InvalidOperationException($"Unable to attach binding to {Path.Path} property using {Mode} mode.");
-                    }
-
-                    SetBinding();
-                };
-
-            targetElement.Loaded += targetElementOnLoadedEventHandler;
+            SetBinding();
         }
 
         private void SetBinding()
         {
-            BindingOperations.SetBinding(this, ComputedValueProperty, this);
-        }
-
-        private void OnComputedValueChanged()
-        {
-            _computedValueChanged.RaiseEvent(this);
+            using (DisableableBindingValueChangedCallback.Disable())
+            {
+                BindingOperations.SetBinding(this, BindingValueProperty, this);
+            }
         }
 
         private static bool CheckIfCanApplyBinding(object source, string propertyPath, BindingMode mode)
@@ -167,15 +152,28 @@ namespace WinRTMultibinding
             throw new ArgumentException("Unknown binding mode.", "mode");
         }
 
-        private static void OnComputedValueChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private void SetBindingValue(object bindingValue)
         {
-            DisableableComputedValueChangedCallback.OnPropertyChanged(d, e);
+            using (DisableableBindingValueChangedCallback.Disable())
+            {
+                SetValue(BindingValueProperty, bindingValue);
+            }
         }
 
-        private static void NotifyOnComputedValueChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private static void OnBindingValueChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            DisableableBindingValueChangedCallback.OnPropertyChanged(d, e);
+        }
+
+        private static void NotifyOnBindingValueChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             var binding = (Binding)d;
-            binding.OnComputedValueChanged();
+            binding.OnBindingValueChanged();
+        }
+
+        private void OnBindingValueChanged()
+        {
+            _bindingValueChanged.RaiseEvent(this);
         }
     }
 }

@@ -23,9 +23,15 @@ namespace WinRTMultibinding
 
         private IEnumerable<IMultibindingItem> MultibindingItems => Bindings;
 
+        private IEnumerable<IOneWayMultibindingItem> OneWayMultibindingItems => Bindings;
+
+        private IEnumerable<IOneWayToSourceMultibindingItem> OneWayToSourceMultibindingItems => Bindings.Where(binding => binding.Mode == BindingMode.TwoWay); 
+
         public PropertyPath BindingPropertyPath { get; set; }
 
         public BindingMode Mode { get; set; }
+
+        public UpdateSourceTrigger UpdateSourceTrigger { get; set; }
 
         public IMultivalueConverter Converter { get; set; }
 
@@ -33,7 +39,7 @@ namespace WinRTMultibinding
 
         public string ConverterLanguage { get; set; }
 
-        public List<Binding> Bindings { get; set; }
+        public List<Binding> Bindings { get; }
 
 
         static Multibinding()
@@ -55,7 +61,7 @@ namespace WinRTMultibinding
             }
 
             _associatedObject = associatedObject;
-            Initialize();
+            _associatedObject.Loaded += (s, e) => Initialize();
         }
 
 
@@ -67,57 +73,54 @@ namespace WinRTMultibinding
             {
                 throw new InvalidOperationException($"Unable to attach binding to {_targetPropertyInfo.Name} property using {Mode} mode.");
             }
-            Bindings.ForEach(binding => binding.Mode = Mode);
+
+            Bindings.Where(binding => binding.Mode == default(BindingMode))
+                .ForEach(binding => binding.Mode = Mode);
+            Bindings.Where(binding => binding.UpdateSourceTrigger == UpdateSourceTrigger.Default)
+                .ForEach(binding => binding.UpdateSourceTrigger = UpdateSourceTrigger);
             MultibindingItems.ForEach(item => item.Initialize(_associatedObject));
 
             switch (Mode)
             {
                 case BindingMode.OneTime:
                 case BindingMode.OneWay:
-                    MakeOneWayBinding();
+                    CreateOneWayBinding();
                     break;
                 case BindingMode.TwoWay:
-                    MakeOneWayBinding();
-                    MakeOneWayToSourceBinding();
+                    CreateOneWayBinding();
+                    CreateOneWayToSourceBinding();
                     break;
+            }
+
+            TriggerInitialOneWayBinding();
+        }
+
+        private void CreateOneWayBinding()
+        {
+            OneWayMultibindingItems.ForEach(item => item.SourcePropertyValueChanged += OneWayMultibindingItemOnSourcePropertyValueChanged);
+        }
+
+        private void CreateOneWayToSourceBinding()
+        {
+            using (DisableableTargetPropertyValueChangedCallback.Disable())
+            {
+                var binding = new Windows.UI.Xaml.Data.Binding { Source = _associatedObject, Path = BindingPropertyPath };
+                BindingOperations.SetBinding(this, TargetPropertyValueProperty, binding);
             }
         }
 
-        private void MakeOneWayBinding()
+        private void TriggerInitialOneWayBinding()
         {
-            MultibindingItems.ForEach(item => item.ComputedValueChanged += MultibindingItemOnComputedValueChanged);
+            OneWayMultibindingItemOnSourcePropertyValueChanged(this, EventArgs.Empty);
         }
 
-        private void MakeOneWayToSourceBinding()
+        private void OneWayMultibindingItemOnSourcePropertyValueChanged(object sender, EventArgs e)
         {
-            var binding = new Windows.UI.Xaml.Data.Binding { Source = _associatedObject, Path = BindingPropertyPath };
-            BindingOperations.SetBinding(this, TargetPropertyValueProperty, binding);
-        }
-
-        private void MultibindingItemOnComputedValueChanged(object sender, EventArgs e)
-        {
-            var values = MultibindingItems.Select(item => item.ComputedValue).ToArray();
+            var values = OneWayMultibindingItems.Select(item => item.SourcePropertyValue).ToArray();
             var convertedValue = Converter.Convert(values, _targetPropertyInfo.PropertyType, ConverterParameter, ConverterLanguage);
             convertedValue = ChangeType(convertedValue, _targetPropertyInfo.PropertyType);
 
-            using (DisableableTargetPropertyValueChangedCallback.Disable())
-            {
-                _targetPropertyInfo.SetValue(_associatedObject, convertedValue);
-            }
-        }
-
-        private void AssociatedObjectOnTargetPropertyChanged()
-        {
-            if (MultibindingItems.Any(item => item.ComputedValue == null))
-            {
-                return;
-            }
-
-            var value = _targetPropertyInfo.GetValue(_associatedObject);
-            var targetTypes = MultibindingItems.Select(item => item.ComputedValue.GetType()).ToArray();
-            var values = Converter.ConvertBack(value, targetTypes, ConverterParameter, ConverterLanguage);
-
-            MultibindingItems.ForEach((item, index) => item.ComputedValue = values[index]);
+            SetTargetPropertyValue(convertedValue);
         }
 
         private static bool CheckIfCanApplyBinding(PropertyInfo targetProperty, BindingMode mode)
@@ -134,13 +137,21 @@ namespace WinRTMultibinding
             throw new ArgumentException("Unknown binding mode.", "mode");
         }
 
-        private static object ChangeType(object value, Type type)
+        private static object ChangeType(object value, Type conversionType)
         {
             var valueType = value.GetType();
             var valueTypeInfo = valueType.GetTypeInfo();
-            var isCompatible = valueType == type || valueTypeInfo.IsSubclassOf(type);
+            var isCompatible = valueType == conversionType || valueTypeInfo.IsSubclassOf(conversionType);
 
-            return isCompatible ? value : Convert.ChangeType(value, type);
+            return isCompatible ? value : Convert.ChangeType(value, conversionType);
+        }
+
+        private void SetTargetPropertyValue(object targetPropertyValue)
+        {
+            using (DisableableTargetPropertyValueChangedCallback.Disable())
+            {
+                _targetPropertyInfo.SetValue(_associatedObject, targetPropertyValue);
+            }
         }
 
         private static void OnTargetPropertyValueChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -151,7 +162,16 @@ namespace WinRTMultibinding
         private static void NotifyOnTargetPropertyValueChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             var multibinding = (Multibinding)d;
-            multibinding.AssociatedObjectOnTargetPropertyChanged();
+            multibinding.AssociatedObjectOnTargetPropertyValueChanged();
+        }
+
+        private void AssociatedObjectOnTargetPropertyValueChanged()
+        {
+            var value = _targetPropertyInfo.GetValue(_associatedObject);
+            var targetTypes = OneWayToSourceMultibindingItems.Select(item => item.SourcePropertyType).ToArray();
+            var values = Converter.ConvertBack(value, targetTypes, ConverterParameter, ConverterLanguage);
+
+            OneWayToSourceMultibindingItems.ForEach((item, index) => item.OnTargetPropertyValueChanged(values[index]));
         }
     }
 }
