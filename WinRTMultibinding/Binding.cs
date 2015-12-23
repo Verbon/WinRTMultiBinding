@@ -42,7 +42,6 @@ namespace WinRTMultibinding
         public Binding()
         {
             Mode = default(BindingMode);
-            UpdateSourceTrigger = UpdateSourceTrigger.Default;
         }
 
 

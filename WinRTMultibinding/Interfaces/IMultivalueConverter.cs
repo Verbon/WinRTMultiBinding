@@ -2,7 +2,7 @@
 
 namespace WinRTMultibinding.Interfaces
 {
-    public interface IMultivalueConverter
+    public interface IMultiValueConverter
     {
         object Convert(object[] values, Type targetType, object parameter, string language);
 

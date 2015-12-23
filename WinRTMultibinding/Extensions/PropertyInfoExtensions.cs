@@ -2,12 +2,12 @@
 
 namespace WinRTMultibinding.Extensions
 {
-    internal static class ReflectionExtensions
+    internal static class PropertyInfoExtensions
     {
         public static bool CanRead(this PropertyInfo propertyInfo)
-            => propertyInfo.CanRead && !propertyInfo.GetMethod.IsPrivate;
+            => propertyInfo.CanRead && !propertyInfo.GetMethod.IsFamily;
 
         public static bool CanWrite(this PropertyInfo propertyInfo)
-            => propertyInfo.CanWrite && !propertyInfo.SetMethod.IsPrivate;
+            => propertyInfo.CanWrite && !propertyInfo.SetMethod.IsFamily;
     }
 }
