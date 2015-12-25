@@ -229,7 +229,8 @@ namespace WinRTMultibinding
             var valueTypeInfo = valueType.GetTypeInfo();
             var isCompatible = valueType == conversionType || valueTypeInfo.IsSubclassOf(conversionType);
 
-            return isCompatible ? value : Convert.ChangeType(value, conversionType);
+            return isCompatible ? value
+                : (conversionType == typeof (String) ? value.ToString() : Convert.ChangeType(value, conversionType));
         }
 
         private object GetDefaultValueForTargetProperty()
