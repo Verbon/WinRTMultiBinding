@@ -21,21 +21,31 @@ namespace WinRTMultibinding
         private FrameworkElement _associatedObject;
 
 
-        private IEnumerable<IMultibindingItem> MultibindingItems => Bindings;
+        private IReadOnlyList<IMultibindingItem> MultibindingItems => Bindings;
 
-        private IEnumerable<IOneWayMultibindingItem> OneWayMultibindingItems => Bindings;
+        private IReadOnlyList<IOneWayMultibindingItem> OneWayMultibindingItems => Bindings;
 
-        private IEnumerable<IOneWayToSourceMultibindingItem> OneWayToSourceMultibindingItems => Bindings; 
+        private IReadOnlyList<IOneWayToSourceMultibindingItem> OneWayToSourceMultibindingItems => Bindings;
+
+        private bool CanUseStringFormat => StringFormat != null && _targetPropertyInfo.PropertyType == typeof (String);
+
+        private bool CanUseConverter => Converter != null;
 
         public PropertyPath BindingPropertyPath { get; set; }
 
         public BindingMode Mode { get; set; }
+
+        public string StringFormat { get; set; }
 
         public IMultiValueConverter Converter { get; set; }
 
         public object ConverterParameter { get; set; }
 
         public string ConverterLanguage { get; set; }
+
+        public object TargetNullValue { get; set; }
+
+        public object FallbackValue { get; set; }
 
         public List<Binding> Bindings { get; }
 
@@ -47,6 +57,7 @@ namespace WinRTMultibinding
 
         public MultiBinding()
         {
+            Mode = BindingMode.OneWay;
             Bindings = new List<Binding>();
         }
 
@@ -66,8 +77,17 @@ namespace WinRTMultibinding
         private void Initialize()
         {
             _targetPropertyInfo = _associatedObject.GetType().GetRuntimeProperty(BindingPropertyPath.Path);
+            if (TargetNullValue != null)
+            {
+                TargetNullValue = ChangeType(TargetNullValue, _targetPropertyInfo.PropertyType);
+            }
+            FallbackValue = FallbackValue != null ? ChangeType(FallbackValue, _targetPropertyInfo.PropertyType) : GetDefaultValueForTargetProperty();
 
-            if (!CheckIfCanApplyBinding(_targetPropertyInfo, Mode))
+            if (!CanUseStringFormat && !CanUseConverter)
+            {
+                throw new InvalidOperationException("Unable to attach binding. Please specify StringFormat or Converter.");
+            }
+            if (!CheckIfBindingModeIsValid())
             {
                 throw new InvalidOperationException($"Unable to attach binding to {_targetPropertyInfo.Name} property using {Mode} mode.");
             }
@@ -112,25 +132,78 @@ namespace WinRTMultibinding
 
         private void OneWayMultibindingItemOnSourcePropertyValueChanged(object sender, EventArgs e)
         {
-            var values = OneWayMultibindingItems.Select(item => item.SourcePropertyValue).ToArray();
+            if (CanUseStringFormat && CanUseConverter)
+            {
+                SetTargetPropertyValue(FallbackValue);
+            }
+            else
+            {
+                var values = OneWayMultibindingItems.Select(item => item.SourcePropertyValue).ToArray();
+
+                if (CanUseStringFormat)
+                {
+                    SetTargetPropertyValueUsingStringFormat(values);
+                }
+                else
+                {
+                    SetTargetPropertyValueUsingConverter(values);
+                }
+            }
+        }
+
+        private void AssociatedObjectOnTargetPropertyValueChanged()
+        {
+            if (Converter != null)
+            {
+                var value = _targetPropertyInfo.GetValue(_associatedObject);
+                var targetTypes = OneWayToSourceMultibindingItems.Select(item => item.SourcePropertyType).ToArray();
+                var values = Converter.ConvertBack(value, targetTypes, ConverterParameter, ConverterLanguage);
+
+                values.ForEach((v, index) =>
+                    {
+                        var item = OneWayToSourceMultibindingItems[index];
+
+                        if (item.Mode > BindingMode.OneWay)
+                        {
+                            item.OnTargetPropertyValueChanged(v);
+                        }
+                    });
+            }
+        }
+
+        private void SetTargetPropertyValueUsingStringFormat(object[] args)
+        {
+            var formattedValue = String.Format(StringFormat, args);
+
+            SetTargetPropertyValue(formattedValue);
+        }
+
+        private void SetTargetPropertyValueUsingConverter(object[] values)
+        {
             var convertedValue = Converter.Convert(values, _targetPropertyInfo.PropertyType, ConverterParameter, ConverterLanguage);
-            convertedValue = ChangeType(convertedValue, _targetPropertyInfo.PropertyType);
+
+            if (convertedValue == null)
+            {
+                convertedValue = TargetNullValue ?? FallbackValue;
+            }
+            else if (convertedValue == DependencyProperty.UnsetValue)
+            {
+                convertedValue = FallbackValue;
+            }
+            else
+            {
+                convertedValue = ChangeType(convertedValue, _targetPropertyInfo.PropertyType);
+            }
 
             SetTargetPropertyValue(convertedValue);
         }
 
-        private static bool CheckIfCanApplyBinding(PropertyInfo targetProperty, BindingMode mode)
+        private void SetTargetPropertyValue(object targetPropertyValue)
         {
-            switch (mode)
+            using (DisableableTargetPropertyValueChangedCallback.Disable())
             {
-                case BindingMode.OneTime:
-                case BindingMode.OneWay:
-                    return targetProperty.CanWrite();
-                case BindingMode.TwoWay:
-                    return targetProperty.CanRead() && targetProperty.CanWrite();
+                _targetPropertyInfo.SetValue(_associatedObject, targetPropertyValue);
             }
-
-            throw new ArgumentException("Unknown binding mode.", "mode");
         }
 
         private static object ChangeType(object value, Type conversionType)
@@ -142,12 +215,28 @@ namespace WinRTMultibinding
             return isCompatible ? value : Convert.ChangeType(value, conversionType);
         }
 
-        private void SetTargetPropertyValue(object targetPropertyValue)
+        private object GetDefaultValueForTargetProperty()
         {
-            using (DisableableTargetPropertyValueChangedCallback.Disable())
+            var propertyType = _targetPropertyInfo.PropertyType;
+            var propertyTypeInfo = propertyType.GetTypeInfo();
+
+            return propertyTypeInfo.IsValueType
+                ? Activator.CreateInstance(propertyType)
+                : (propertyType == typeof(String) ? String.Empty : null);
+        }
+
+        private bool CheckIfBindingModeIsValid()
+        {
+            switch (Mode)
             {
-                _targetPropertyInfo.SetValue(_associatedObject, targetPropertyValue);
+                case BindingMode.OneTime:
+                case BindingMode.OneWay:
+                    return _targetPropertyInfo.CanWrite();
+                case BindingMode.TwoWay:
+                    return _targetPropertyInfo.CanRead() && _targetPropertyInfo.CanWrite();
             }
+
+            throw new ArgumentException("Unknown binding mode.", "mode");
         }
 
         private static void OnTargetPropertyValueChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -159,21 +248,6 @@ namespace WinRTMultibinding
         {
             var multiBinding = (MultiBinding)d;
             multiBinding.AssociatedObjectOnTargetPropertyValueChanged();
-        }
-
-        private void AssociatedObjectOnTargetPropertyValueChanged()
-        {
-            var value = _targetPropertyInfo.GetValue(_associatedObject);
-            var targetTypes = OneWayToSourceMultibindingItems.Select(item => item.SourcePropertyType).ToArray();
-            var values = Converter.ConvertBack(value, targetTypes, ConverterParameter, ConverterLanguage);
-
-            OneWayToSourceMultibindingItems.ForEach((item, index) =>
-                {
-                    if (item.Mode > BindingMode.OneWay)
-                    {
-                        item.OnTargetPropertyValueChanged(values[index]);
-                    }
-                });
         }
     }
 }

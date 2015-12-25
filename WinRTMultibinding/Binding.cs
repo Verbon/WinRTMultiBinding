@@ -119,7 +119,7 @@ namespace WinRTMultibinding
         {
             Source = sourceSelector();
 
-            if (!CheckIfCanApplyBinding(Source, Path.Path, Mode))
+            if (!CheckIfBindingModeIsValid())
             {
                 throw new InvalidOperationException($"Unable to attach binding to {Path.Path} property using {Mode} mode.");
             }
@@ -135,11 +135,11 @@ namespace WinRTMultibinding
             }
         }
 
-        private static bool CheckIfCanApplyBinding(object source, string propertyPath, BindingMode mode)
+        private bool CheckIfBindingModeIsValid()
         {
-            var sourceProperty = source.GetType().GetRuntimeProperty(propertyPath);
+            var sourceProperty = Source.GetType().GetRuntimeProperty(Path.Path);
 
-            switch (mode)
+            switch (Mode)
             {
                 case BindingMode.OneTime:
                 case BindingMode.OneWay:
