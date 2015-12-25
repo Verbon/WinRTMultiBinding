@@ -35,6 +35,8 @@ namespace WinRTMultibinding
 
         public BindingMode Mode { get; set; }
 
+        public UpdateSourceTrigger UpdateSourceTrigger { get; set; }
+
         public string StringFormat { get; set; }
 
         public IMultiValueConverter Converter { get; set; }
@@ -58,6 +60,7 @@ namespace WinRTMultibinding
         public MultiBinding()
         {
             Mode = BindingMode.OneWay;
+            UpdateSourceTrigger = UpdateSourceTrigger.Default;
             Bindings = new List<Binding>();
         }
 
@@ -73,6 +76,9 @@ namespace WinRTMultibinding
             _associatedObject.Loaded += (s, e) => Initialize();
         }
 
+        internal MultiBindingExpression GetMultiBindingExpression()
+            => MultiBindingExpression.CreateFrom(this, AssociatedObjectOnTargetPropertyValueChanged);
+
 
         private void Initialize()
         {
@@ -87,13 +93,14 @@ namespace WinRTMultibinding
             {
                 throw new InvalidOperationException("Unable to attach binding. Please specify StringFormat or Converter.");
             }
-            if (!CheckIfBindingModeIsValid())
+            if (!CheckIfBindingModeIsValid(Mode))
             {
                 throw new InvalidOperationException($"Unable to attach binding to {_targetPropertyInfo.Name} property using {Mode} mode.");
             }
 
             Bindings.Where(binding => binding.Mode == default(BindingMode) || binding.Mode > Mode)
                 .ForEach(binding => binding.Mode = Mode);
+            Bindings.ForEach(binding => binding.UpdateSourceTrigger = UpdateSourceTrigger);
             MultibindingItems.ForEach(item => item.Initialize(_associatedObject));
 
             switch (Mode)
@@ -118,10 +125,20 @@ namespace WinRTMultibinding
 
         private void CreateOneWayToSourceBinding()
         {
-            using (DisableableTargetPropertyValueChangedCallback.Disable())
+            switch (UpdateSourceTrigger)
             {
-                var binding = new Windows.UI.Xaml.Data.Binding { Source = _associatedObject, Path = BindingPropertyPath };
-                BindingOperations.SetBinding(this, TargetPropertyValueProperty, binding);
+                case UpdateSourceTrigger.Default:
+                case UpdateSourceTrigger.PropertyChanged:
+                    using (DisableableTargetPropertyValueChangedCallback.Disable())
+                    {
+                        var binding = new Windows.UI.Xaml.Data.Binding { Source = _associatedObject, Path = BindingPropertyPath };
+                        BindingOperations.SetBinding(this, TargetPropertyValueProperty, binding);
+                    }
+                    break;
+                case UpdateSourceTrigger.Explicit:
+                    break;
+                default:
+                    throw new ArgumentException("Unknown UpdateSourceTrigger mode.");
             }
         }
 
@@ -225,18 +242,18 @@ namespace WinRTMultibinding
                 : (propertyType == typeof(String) ? String.Empty : null);
         }
 
-        private bool CheckIfBindingModeIsValid()
+        private bool CheckIfBindingModeIsValid(BindingMode mode)
         {
-            switch (Mode)
+            switch (mode)
             {
                 case BindingMode.OneTime:
                 case BindingMode.OneWay:
                     return _targetPropertyInfo.CanWrite();
                 case BindingMode.TwoWay:
                     return _targetPropertyInfo.CanRead() && _targetPropertyInfo.CanWrite();
+                default:
+                    throw new ArgumentException("Unknown binding mode.", "mode");
             }
-
-            throw new ArgumentException("Unknown binding mode.", "mode");
         }
 
         private static void OnTargetPropertyValueChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)

@@ -14,12 +14,15 @@
     <Compile Include="$(MSBuildThisFileDirectory)Disposable\AnonymousDisposable.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\CollectionExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\EventsExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\MultiBindingExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\PropertyInfoExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IMultibindingItem.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IMultiValueConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IOneWayMultibindingItem.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IOneWayToSourceMultibindingItem.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MultiBinding.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)MultiBindingExpression.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MultiBindingHelper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Reflection\Reflector.cs" />
   </ItemGroup>
 </Project>
