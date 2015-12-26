@@ -48,11 +48,11 @@ namespace WinRTMultibinding
 
             multiBindings.ForEach(multiBinding =>
                 {
-                    var targetDependencyPropertyName = multiBinding.BindingPropertyPath.Path + DependecyPropertySuffix;
+                    var targetDependencyPropertyName = multiBinding.TargetPropertyPath.Path + DependecyPropertySuffix;
                     var targetDependencyProperty = ExtractDependencyProperty(associatedObject, targetDependencyPropertyName);
                     if (targetDependencyProperty == null)
                     {
-                        throw new InvalidOperationException($"{multiBinding.BindingPropertyPath.Path} is not a DependencyProperty.");
+                        throw new InvalidOperationException($"{multiBinding.TargetPropertyPath.Path} is not a DependencyProperty.");
                     }
                     var multiBindingTargetInfo = new MultiBindingTargetInfo(associatedObject, targetDependencyProperty);
 

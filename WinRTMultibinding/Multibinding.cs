@@ -31,7 +31,7 @@ namespace WinRTMultibinding
 
         private bool CanUseConverter => Converter != null;
 
-        public PropertyPath BindingPropertyPath { get; set; }
+        public PropertyPath TargetPropertyPath { get; set; }
 
         public BindingMode Mode { get; set; }
 
@@ -82,7 +82,7 @@ namespace WinRTMultibinding
 
         private void Initialize()
         {
-            _targetPropertyInfo = _associatedObject.GetType().GetRuntimeProperty(BindingPropertyPath.Path);
+            _targetPropertyInfo = _associatedObject.GetType().GetRuntimeProperty(TargetPropertyPath.Path);
             if (TargetNullValue != null)
             {
                 TargetNullValue = ChangeType(TargetNullValue, _targetPropertyInfo.PropertyType);
@@ -131,7 +131,7 @@ namespace WinRTMultibinding
                 case UpdateSourceTrigger.PropertyChanged:
                     using (DisableableTargetPropertyValueChangedCallback.Disable())
                     {
-                        var binding = new Windows.UI.Xaml.Data.Binding { Source = _associatedObject, Path = BindingPropertyPath };
+                        var binding = new Windows.UI.Xaml.Data.Binding { Source = _associatedObject, Path = TargetPropertyPath };
                         BindingOperations.SetBinding(this, TargetPropertyValueProperty, binding);
                     }
                     break;
