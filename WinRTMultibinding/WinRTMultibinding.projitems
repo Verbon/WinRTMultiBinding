@@ -23,6 +23,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)MultiBinding.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MultiBindingExpression.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MultiBindingHelper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)MultiBindingCollection.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Reflection\Reflector.cs" />
   </ItemGroup>
 </Project>

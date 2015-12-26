@@ -73,7 +73,7 @@ namespace WinRTMultibinding
 
         private void BindToElement(FrameworkElement targetElement)
         {
-            Func<object> sourceSelector = () =>
+            Func<object> sourceFactory = () =>
                 {
                     var element = targetElement.FindName(ElementName) as FrameworkElement;
 
@@ -85,39 +85,40 @@ namespace WinRTMultibinding
                     return element;
                 };
 
-            SetBinding(sourceSelector);
+            SetBinding(sourceFactory);
         }
 
         private void BindToRelativeSource(FrameworkElement targetElement)
         {
-            Func<object> sourceSelector = () =>
+            Func<object> sourceFactory = () =>
                 {
                     switch (RelativeSource.Mode)
                     {
                         case RelativeSourceMode.Self:
                             return targetElement;
                         default:
-                            throw new NotSupportedException("Unable to bind to this kind of RelativeSource.");
+                            throw new NotSupportedException($"{RelativeSource.Mode} RelativeSource mode is not supported.");
                     }
                 };
 
-            SetBinding(sourceSelector);
+            SetBinding(sourceFactory);
         }
 
         private void BindToDataContext(FrameworkElement targetElement)
         {
-            Func<object> sourceSelector = () =>
+            Func<object> sourceFactory = () =>
                 {
                     targetElement.DataContextChanged += (sender, e) => Source = targetElement.DataContext;
+
                     return targetElement.DataContext;
                 };
 
-            SetBinding(sourceSelector);
+            SetBinding(sourceFactory);
         }
 
-        private void SetBinding(Func<object> sourceSelector)
+        private void SetBinding(Func<object> sourceFactory)
         {
-            Source = sourceSelector();
+            Source = sourceFactory();
 
             if (!CheckIfBindingModeIsValid(Mode))
             {

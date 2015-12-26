@@ -138,7 +138,7 @@ namespace WinRTMultibinding
                 case UpdateSourceTrigger.Explicit:
                     break;
                 default:
-                    throw new ArgumentException("Unknown UpdateSourceTrigger mode.");
+                    throw new InvalidOperationException("Unknown UpdateSourceTrigger mode.");
             }
         }
 
@@ -170,7 +170,7 @@ namespace WinRTMultibinding
 
         private void AssociatedObjectOnTargetPropertyValueChanged()
         {
-            if (Converter != null)
+            if (CanUseConverter)
             {
                 var value = _targetPropertyInfo.GetValue(_associatedObject);
                 var targetTypes = OneWayToSourceMultibindingItems.Select(item => item.SourcePropertyType).ToArray();

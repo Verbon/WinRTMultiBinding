@@ -1,30 +1,30 @@
 using System;
 using System.Collections.Generic;
 using Windows.UI.Xaml;
+using WinRTMultibinding.Extensions;
 using WinRTMultibinding.Reflection;
 
 namespace WinRTMultibinding
 {
     public static class MultiBindingHelper
     {
+        public static readonly DependencyProperty MultiBindingsProperty = DependencyProperty.RegisterAttached("MultiBindings", typeof (MultiBindingCollection), typeof (MultiBindingHelper), new PropertyMetadata(default(MultiBindingCollection), OnMultiBindingsChanged));
+
+        public static void SetMultiBindings(DependencyObject element, MultiBindingCollection value)
+        {
+            element.SetValue(MultiBindingsProperty, value);
+        }
+
+        public static MultiBindingCollection GetMultiBindings(DependencyObject element)
+        {
+            return (MultiBindingCollection)element.GetValue(MultiBindingsProperty);
+        }
+
+
         private const string DependecyPropertySuffix = "Property";
 
 
-        public static readonly DependencyProperty MultiBindingProperty = DependencyProperty.RegisterAttached("MultiBinding", typeof (MultiBinding), typeof (MultiBindingHelper), new PropertyMetadata(default(MultiBinding), OnMultiBindingChanged));
-
-
         private static readonly IDictionary<MultiBindingTargetInfo, MultiBinding> MultiBindings;
-
-
-        public static void SetMultiBinding(DependencyObject element, MultiBinding value)
-        {
-            element.SetValue(MultiBindingProperty, value);
-        }
-
-        public static MultiBinding GetMultiBinding(DependencyObject element)
-        {
-            return (MultiBinding) element.GetValue(MultiBindingProperty);
-        }
 
 
         static MultiBindingHelper()
@@ -33,7 +33,7 @@ namespace WinRTMultibinding
         }
 
 
-        static internal bool TryGetMultiBindingFor(FrameworkElement frameworkElement, DependencyProperty dependencyProperty, out MultiBinding multiBinding)
+        internal static bool TryGetMultiBindingFor(FrameworkElement frameworkElement, DependencyProperty dependencyProperty, out MultiBinding multiBinding)
         {
             var dependencyPropertyInfo = new MultiBindingTargetInfo(frameworkElement, dependencyProperty);
 
@@ -41,16 +41,24 @@ namespace WinRTMultibinding
         }
 
 
-        private static void OnMultiBindingChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private static void OnMultiBindingsChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             var associatedObject = (FrameworkElement) d;
-            var multiBinding = (MultiBinding) e.NewValue;
-            var targetDependencyPropertyName = multiBinding.BindingPropertyPath.Path + DependecyPropertySuffix;
-            var targetDependencyProperty = ExtractDependencyProperty(associatedObject, targetDependencyPropertyName);
-            var multiBindingTargetInfo = new MultiBindingTargetInfo(associatedObject, targetDependencyProperty);
+            var multiBindings = (MultiBindingCollection) e.NewValue;
 
-            AddToInnerDictionary(multiBindingTargetInfo, multiBinding);
-            multiBinding.OnAttached(associatedObject);
+            multiBindings.ForEach(multiBinding =>
+                {
+                    var targetDependencyPropertyName = multiBinding.BindingPropertyPath.Path + DependecyPropertySuffix;
+                    var targetDependencyProperty = ExtractDependencyProperty(associatedObject, targetDependencyPropertyName);
+                    if (targetDependencyProperty == null)
+                    {
+                        throw new InvalidOperationException($"{multiBinding.BindingPropertyPath.Path} is not a DependencyProperty.");
+                    }
+                    var multiBindingTargetInfo = new MultiBindingTargetInfo(associatedObject, targetDependencyProperty);
+
+                    AddToInnerDictionary(multiBindingTargetInfo, multiBinding);
+                    multiBinding.OnAttached(associatedObject);
+                });
         }
 
         private static DependencyProperty ExtractDependencyProperty(DependencyObject dependencyObject, string dependencyPropertyName)
