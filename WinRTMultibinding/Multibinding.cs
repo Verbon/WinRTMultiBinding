@@ -60,7 +60,7 @@ namespace WinRTMultibinding
         public MultiBinding()
         {
             Mode = BindingMode.OneWay;
-            UpdateSourceTrigger = UpdateSourceTrigger.Default;
+            UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged;
             Bindings = new List<Binding>();
         }
 
@@ -76,7 +76,7 @@ namespace WinRTMultibinding
             _associatedObject.Loaded += (s, e) => Initialize();
         }
 
-        internal MultiBindingExpression GetMultiBindingExpression()
+        internal MultiBindingExpression GetExpression()
             => MultiBindingExpression.CreateFrom(this, AssociatedObjectOnTargetPropertyValueChanged);
 
 
@@ -229,7 +229,8 @@ namespace WinRTMultibinding
             var valueTypeInfo = valueType.GetTypeInfo();
             var isCompatible = valueType == conversionType || valueTypeInfo.IsSubclassOf(conversionType);
 
-            return isCompatible ? value : Convert.ChangeType(value, conversionType);
+            return isCompatible ? value
+                : (conversionType == typeof (String) ? value.ToString() : Convert.ChangeType(value, conversionType));
         }
 
         private object GetDefaultValueForTargetProperty()

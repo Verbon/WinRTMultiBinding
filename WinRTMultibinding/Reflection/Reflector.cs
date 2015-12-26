@@ -5,12 +5,12 @@ namespace WinRTMultibinding.Reflection
 {
     internal static class Reflector
     {
-        public static TMember ScanHierarchyForMember<TMember>(Type type, Func<TypeInfo, TMember> memberExtractor) where TMember : MemberInfo
+        public static TMemberInfo ScanHierarchyForMember<TMemberInfo>(Type type, Func<TypeInfo, TMemberInfo> memberExtractor) where TMemberInfo : MemberInfo
         {
             while (type != typeof(object))
             {
                 var typeInfo = type.GetTypeInfo();
-                TMember memberInfo;
+                TMemberInfo memberInfo;
 
                 if ((memberInfo = memberExtractor(typeInfo)) != null)
                 {
