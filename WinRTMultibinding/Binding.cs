@@ -119,7 +119,7 @@ namespace WinRTMultibinding
         {
             Source = sourceSelector();
 
-            if (!CheckIfBindingModeIsValid())
+            if (!CheckIfBindingModeIsValid(Mode))
             {
                 throw new InvalidOperationException($"Unable to attach binding to {Path.Path} property using {Mode} mode.");
             }
@@ -135,20 +135,20 @@ namespace WinRTMultibinding
             }
         }
 
-        private bool CheckIfBindingModeIsValid()
+        private bool CheckIfBindingModeIsValid(BindingMode mode)
         {
             var sourceProperty = Source.GetType().GetRuntimeProperty(Path.Path);
 
-            switch (Mode)
+            switch (mode)
             {
                 case BindingMode.OneTime:
                 case BindingMode.OneWay:
                     return sourceProperty.CanRead();
                 case BindingMode.TwoWay:
                     return sourceProperty.CanRead() && sourceProperty.CanWrite();
+                default:
+                    throw new ArgumentException("Unknown binding mode.", "mode");
             }
-
-            throw new ArgumentException("Unknown binding mode.", "mode");
         }
 
         private void SetBindingValue(object bindingValue)
