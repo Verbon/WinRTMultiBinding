@@ -163,7 +163,7 @@ If you chose Default or PropertyChanged, your source value is updated every time
 If you chose Explicit:
 
 ```xaml
-<TextBox>
+<TextBox x:Name="MyTextBox">
     <m:MultiBindingHelper.MultiBindings>
         <m:MultiBindingCollection>
             <m:MultiBinding TargetPropertyPath="Text" Mode="TwoWay" Converter="{StaticResource MyMultiValueConverter}"
