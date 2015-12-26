@@ -8,7 +8,7 @@ namespace WinRTMultibinding.Extensions
         {
             MultiBinding multiBinding;
 
-            return MultiBindingHelper.TryGetMultiBindingFor(frameworkElement, dependencyProperty, out multiBinding) ? multiBinding.GetMultiBindingExpression() : null;
+            return MultiBindingHelper.TryGetMultiBindingFor(frameworkElement, dependencyProperty, out multiBinding) ? multiBinding.GetExpression() : null;
         }
     }
 }

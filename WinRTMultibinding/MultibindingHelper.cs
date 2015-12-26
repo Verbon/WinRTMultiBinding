@@ -13,7 +13,7 @@ namespace WinRTMultibinding
         public static readonly DependencyProperty MultiBindingProperty = DependencyProperty.RegisterAttached("MultiBinding", typeof (MultiBinding), typeof (MultiBindingHelper), new PropertyMetadata(default(MultiBinding), OnMultiBindingChanged));
 
 
-        private static readonly IDictionary<DependencyPropertyInfo, MultiBinding> _multiBindings;
+        private static readonly IDictionary<MultiBindingTargetInfo, MultiBinding> MultiBindings;
 
 
         public static void SetMultiBinding(DependencyObject element, MultiBinding value)
@@ -29,15 +29,15 @@ namespace WinRTMultibinding
 
         static MultiBindingHelper()
         {
-            _multiBindings = new Dictionary<DependencyPropertyInfo, MultiBinding>();
+            MultiBindings = new Dictionary<MultiBindingTargetInfo, MultiBinding>();
         }
 
 
         static internal bool TryGetMultiBindingFor(FrameworkElement frameworkElement, DependencyProperty dependencyProperty, out MultiBinding multiBinding)
         {
-            var dependencyPropertyInfo = new DependencyPropertyInfo(frameworkElement, dependencyProperty);
+            var dependencyPropertyInfo = new MultiBindingTargetInfo(frameworkElement, dependencyProperty);
 
-            return _multiBindings.TryGetValue(dependencyPropertyInfo, out multiBinding);
+            return MultiBindings.TryGetValue(dependencyPropertyInfo, out multiBinding);
         }
 
 
@@ -47,9 +47,9 @@ namespace WinRTMultibinding
             var multiBinding = (MultiBinding) e.NewValue;
             var targetDependencyPropertyName = multiBinding.BindingPropertyPath.Path + DependecyPropertySuffix;
             var targetDependencyProperty = ExtractDependencyProperty(associatedObject, targetDependencyPropertyName);
-            var dependencyPropertyInfo = new DependencyPropertyInfo(associatedObject, targetDependencyProperty);
+            var multiBindingTargetInfo = new MultiBindingTargetInfo(associatedObject, targetDependencyProperty);
 
-            AddToInnerDictionary(dependencyPropertyInfo, multiBinding);
+            AddToInnerDictionary(multiBindingTargetInfo, multiBinding);
             multiBinding.OnAttached(associatedObject);
         }
 
@@ -75,32 +75,32 @@ namespace WinRTMultibinding
             return (DependencyProperty) fieldInfo?.GetValue(dependencyObject);
         }
 
-        private static void AddToInnerDictionary(DependencyPropertyInfo dependencyPropertyInfo, MultiBinding multiBinding)
+        private static void AddToInnerDictionary(MultiBindingTargetInfo multiBindingTargetInfo, MultiBinding multiBinding)
         {
-            var frameworkElement = dependencyPropertyInfo.FrameworkElement;
+            var frameworkElement = multiBindingTargetInfo.FrameworkElement;
 
             RoutedEventHandler unloadedEventHandler = null;
             unloadedEventHandler += (sender, args) =>
                 {
                     frameworkElement.Unloaded -= unloadedEventHandler;
 
-                    _multiBindings.Remove(dependencyPropertyInfo);
+                    MultiBindings.Remove(multiBindingTargetInfo);
                 };
             frameworkElement.Unloaded += unloadedEventHandler;
 
-            _multiBindings[dependencyPropertyInfo] = multiBinding;
+            MultiBindings[multiBindingTargetInfo] = multiBinding;
         }
 
 
 
-        private class DependencyPropertyInfo : IEquatable<DependencyPropertyInfo>
+        private class MultiBindingTargetInfo : IEquatable<MultiBindingTargetInfo>
         {
             public FrameworkElement FrameworkElement { get; }
 
             public DependencyProperty DependencyProperty { get; }
 
 
-            public DependencyPropertyInfo(FrameworkElement frameworkElement, DependencyProperty dependencyProperty)
+            public MultiBindingTargetInfo(FrameworkElement frameworkElement, DependencyProperty dependencyProperty)
             {
                 FrameworkElement = frameworkElement;
                 DependencyProperty = dependencyProperty;
@@ -109,15 +109,15 @@ namespace WinRTMultibinding
 
             public override bool Equals(object obj)
             {
-                if (obj is DependencyPropertyInfo)
+                if (obj is MultiBindingTargetInfo)
                 {
-                    return Equals((DependencyPropertyInfo)obj);
+                    return Equals((MultiBindingTargetInfo)obj);
                 }
 
                 return false;
             }
 
-            public bool Equals(DependencyPropertyInfo other)
+            public bool Equals(MultiBindingTargetInfo other)
             {
                 return FrameworkElement.Equals(other.FrameworkElement) &&
                        DependencyProperty.Equals(other.DependencyProperty);
