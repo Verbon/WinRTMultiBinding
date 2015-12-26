@@ -48,7 +48,7 @@ This library provides you <b>MultiBindingHelper.MultiBindings</b> attached prope
 ### Examples
 
 ######Sources
-As you've seen above WinRTMultiBinding supports different binding sources. But: in <b>RelativeSource</b> only <b>Self</b> mode is <b>supported</b>.
+As you've seen above WinRTMultiBinding supports different binding sources. <b>But</b>: RelativeSource supports only Self.
 
 ```xaml
 <TextBlock>
