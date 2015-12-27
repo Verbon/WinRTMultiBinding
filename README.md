@@ -3,12 +3,30 @@ Provides MultiBinding functionality for Windows 8.1 and Windows Phone 8.1 projec
 
 WinRT MultiBinding supports most of WPF MultiBinding's features.
 
-###General
+### Installation via NuGet package
+
+This library is availabe as NuGet packages for Windows and Windows Phone projects:
+
+https://www.nuget.org/packages/WinRT-Multibinding-Windows/
+
+https://www.nuget.org/packages/WinRT-Multibinding-WindowsPhone/
+
+Use Package Manager to install packages or type the following into the Package Manager Console:
+
+```
+Install-Package WinRT-Multibinding-Windows
+
+Install-Package WinRT-Multibinding-WindowsPhone
+```
+
+### General
 This library provides you <b>MultiBindingHelper.MultiBindings</b> attached property which you should initialize with a <b>MultiBindingCollection</b> instance which you should populate with <b>MultiBinding</b> items. Instance of <b>MultiBinding</b> class hosts <b>Binding</b> items.
 
 ```xaml
 <Page xmlns:m="using:WinRTMultibinding">
   <Page.Resources>
+    <MyMultiValueConverter x:Key="MyMultiValueConverter" />
+    <MyConverter x:Key="MyConverter" />
     <SomeDataProvider x:Key="SomeDataProvider" />
   </Page.Resources>
   
@@ -29,7 +47,7 @@ This library provides you <b>MultiBindingHelper.MultiBindings</b> attached prope
 </Page>
 ```
 
-###Features
+### Features
   - Various Sources (ElementName, Source, RelativeSource, DataContext)
   - StringFormat
   - Converter
@@ -38,17 +56,33 @@ This library provides you <b>MultiBindingHelper.MultiBindings</b> attached prope
   - Different Modes (OneTime, OneWay, TwoWay)
   - UpdateSourceTrigger
 
-###Restrictions
+### Restrictions
 
 1)  <strong>RelativeSource.TemplatedParent</strong> and <strong>RelativeSouce.None</strong> are <strong>not</strong> yet <strong>supported</strong>.
 
 2) <strong>UpdateSourceTrigger</strong> - There are only PropertyChanged and Explicit modes. <strong>PropertyChanged</strong> is set by <strong>default</strong>.
   To update source explicitly use <strong>GetMultiBindingExpression()</strong> extension method. It returns <strong>MultiBindingExpression</strong> object which has <strong>UpdateSource()</strong> method.
+  
+3) As you can see, you do not set directly MultinBinding instance to target property, but use attached property instead. So, there are no restrictions to set built-in single Binding to the same property, <b>but</b> this binding will be ignored. For example if you do this:
+```xaml
+<TextBlock Text="{Binding Name}">
+  <m:MultiBindingHelper.MultiBindings>
+    <m:MultiBindingCollection>
+      <m:MultiBinding TargetPropertyPath="Text" Converter="{StaticResourc MyMultiValueConverter}">
+        <m:Binding Path="First" />
+        <m:Binding Path="Second" />
+      </m:MultiBinding>
+    </m:MultiBindingCollection>
+  </m:MultiBindingHelper.MultiBindings>
+</TextBlock>
+```
+
+In this case `Text="{Binding Name}"` binding will be ignored.
 
 ### Examples
 
-######Sources
-As you've seen above WinRTMultiBinding supports different binding sources. <b>But</b>: RelativeSource supports only Self.
+###### Sources
+As you've seen above WinRTMultiBinding supports different binding sources. <b>But</b>: RelativeSource supports only Self mode.
 
 ```xaml
 <TextBlock>
@@ -65,7 +99,7 @@ As you've seen above WinRTMultiBinding supports different binding sources. <b>Bu
   </TextBlock>
 ```
 
-######Using StringFormat
+###### Using StringFormat
 ```xaml
 <TextBlock>
   <m:MultiBindingHelper.MultiBindings>
@@ -79,7 +113,7 @@ As you've seen above WinRTMultiBinding supports different binding sources. <b>Bu
 </TextBlock>
 ```
 
-######Using Converter
+###### Using Converter
 Custom converter must implement <b>IMultiValueConverter</b> interface.
 ```csharp
 public interface IMultiValueConverter
@@ -104,7 +138,7 @@ public interface IMultiValueConverter
 </TextBlock>
 ```
 
-######Modes
+###### Modes
 MultiBinding's BindingMode(<b>OneWay</b> by default) used as the default value for all the bindings in the collection unless an individual binding overrides this property. For example, if the Mode property on the MultiBinding object is set to TwoWay, then all the bindings in the collection are considered TwoWay unless you set a different Mode value on one of the bindings explicitly. Child bindings can only limit parent Mode, but not vice versa(it's okay to have MultiBinding's Mode set to TwoWay and one of the Bindings Mode set to OneWay, but <b>NOT</b> MultiBinding's Mode set to OneWay and one of the Bindings Mode set to TwoWay).
 
 ```xaml
@@ -121,7 +155,7 @@ MultiBinding's BindingMode(<b>OneWay</b> by default) used as the default value f
 </TextBox>
 ```
 
-######TargetNullValue
+###### TargetNullValue
 If you specify TargetNullValue it's returned when your Converter returns null.
 
 ```xaml
@@ -137,11 +171,11 @@ If you specify TargetNullValue it's returned when your Converter returns null.
 </TextBlock>
 ```
 
-######FallbackValue
+###### FallbackValue
 If you specify FallbackValue it's returned when:
   - you specified both <b>StringFormat</b> and <b>Converter</b> to target <b>string</b> property
   - your Converter returned null, but TargetNullValue is not specified
-  - your Converter returned DependencyProperty.UnsetValue
+  - your Converter returned <b>DependencyProperty.UnsetValue</b>
 
 If you did not specify FallbackValue it contains target property type's default value. So, it's always initialized.
 
@@ -158,7 +192,7 @@ If you did not specify FallbackValue it contains target property type's default 
 </TextBlock>
 ```
 
-######UpdateSourceTrigger
+###### UpdateSourceTrigger
 If you chose Default or PropertyChanged, your source value is updated every time target property changes.
 If you chose Explicit:
 
@@ -183,7 +217,7 @@ var multiBindingExpression = MyTextBox.GetMultiBindingExpression(TextBox.TextPro
 multiBindingExpression.UpdateSource();
 ```
 
-######Multiple properties binding
+###### Multiple properties binding
 Simply add several <b>MultiBinding</b> items to <b>MultiBindingCollection</b>.
 
 ```xaml
@@ -201,3 +235,6 @@ Simply add several <b>MultiBinding</b> items to <b>MultiBindingCollection</b>.
     </m:MultiBindingHelper.MultiBindings>
 </TextBox>
 ```
+
+#### Support
+If you do have a contribution for the package feel free to put up a Pull Request or open Issue.
