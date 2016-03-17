@@ -20,10 +20,15 @@
     <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IMultiValueConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IOneWayMultibindingItem.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IOneWayToSourceMultibindingItem.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IBindablePropertyInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Interfaces\ITypeProvider.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MultiBinding.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MultiBindingExpression.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MultiBindingHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MultiBindingCollection.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PropertiesInfo\AttachedPropertyInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PropertiesInfo\DependencyPropertyInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Providers\TypeProvider.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Reflection\Reflector.cs" />
   </ItemGroup>
 </Project>

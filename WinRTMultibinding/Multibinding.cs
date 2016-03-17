@@ -7,6 +7,7 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Markup;
 using WinRTMultibinding.Extensions;
 using WinRTMultibinding.Interfaces;
+using WinRTMultibinding.PropertiesInfo;
 
 namespace WinRTMultibinding
 {
@@ -17,7 +18,7 @@ namespace WinRTMultibinding
 
 
         private static readonly DisableablePropertyChangedCallback DisableableTargetPropertyValueChangedCallback;
-        private PropertyInfo _targetPropertyInfo;
+        private IBindablePropertyInfo _bindablePropertyInfo;
         private FrameworkElement _associatedObject;
 
 
@@ -27,9 +28,10 @@ namespace WinRTMultibinding
 
         private IReadOnlyList<IOneWayToSourceMultibindingItem> OneWayToSourceMultibindingItems => Bindings;
 
-        private bool CanUseStringFormat => StringFormat != null && _targetPropertyInfo.PropertyType == typeof (String);
+        private bool CanUseStringFormat => StringFormat != null && _bindablePropertyInfo.PropertyType == typeof (String);
 
         private bool CanUseConverter => Converter != null;
+
 
         public PropertyPath TargetPropertyPath { get; set; }
 
@@ -48,6 +50,8 @@ namespace WinRTMultibinding
         public object TargetNullValue { get; set; }
 
         public object FallbackValue { get; set; }
+
+        public ITypeProvider AttachedPropertyOwnerTypeProvider { get; set; }
 
         public List<Binding> Bindings { get; }
 
@@ -82,12 +86,12 @@ namespace WinRTMultibinding
 
         private void Initialize()
         {
-            _targetPropertyInfo = _associatedObject.GetType().GetRuntimeProperty(TargetPropertyPath.Path);
+            _bindablePropertyInfo = GetBindablePropertyInfo();
             if (TargetNullValue != null)
             {
-                TargetNullValue = ChangeType(TargetNullValue, _targetPropertyInfo.PropertyType);
+                TargetNullValue = ChangeType(TargetNullValue, _bindablePropertyInfo.PropertyType);
             }
-            FallbackValue = FallbackValue != null ? ChangeType(FallbackValue, _targetPropertyInfo.PropertyType) : GetDefaultValueForTargetProperty();
+            FallbackValue = FallbackValue != null ? ChangeType(FallbackValue, _bindablePropertyInfo.PropertyType) : GetDefaultValueForTargetProperty();
 
             if (!CanUseStringFormat && !CanUseConverter)
             {
@@ -95,7 +99,7 @@ namespace WinRTMultibinding
             }
             if (!CheckIfBindingModeIsValid(Mode))
             {
-                throw new InvalidOperationException($"Unable to attach binding to {_targetPropertyInfo.Name} property using {Mode} mode.");
+                throw new InvalidOperationException($"Unable to attach binding to {_bindablePropertyInfo.Name} property using {Mode} mode.");
             }
 
             Bindings.Where(binding => binding.Mode == default(BindingMode) || binding.Mode > Mode)
@@ -172,7 +176,7 @@ namespace WinRTMultibinding
         {
             if (CanUseConverter)
             {
-                var value = _targetPropertyInfo.GetValue(_associatedObject);
+                var value = _bindablePropertyInfo.GetValue(_associatedObject);
                 var targetTypes = OneWayToSourceMultibindingItems.Select(item => item.SourcePropertyType).ToArray();
                 var values = Converter.ConvertBack(value, targetTypes, ConverterParameter, ConverterLanguage);
 
@@ -197,7 +201,7 @@ namespace WinRTMultibinding
 
         private void SetTargetPropertyValueUsingConverter(object[] values)
         {
-            var convertedValue = Converter.Convert(values, _targetPropertyInfo.PropertyType, ConverterParameter, ConverterLanguage);
+            var convertedValue = Converter.Convert(values, _bindablePropertyInfo.PropertyType, ConverterParameter, ConverterLanguage);
 
             if (convertedValue == null)
             {
@@ -209,7 +213,7 @@ namespace WinRTMultibinding
             }
             else
             {
-                convertedValue = ChangeType(convertedValue, _targetPropertyInfo.PropertyType);
+                convertedValue = ChangeType(convertedValue, _bindablePropertyInfo.PropertyType);
             }
 
             SetTargetPropertyValue(convertedValue);
@@ -219,7 +223,7 @@ namespace WinRTMultibinding
         {
             using (DisableableTargetPropertyValueChangedCallback.Disable())
             {
-                _targetPropertyInfo.SetValue(_associatedObject, targetPropertyValue);
+                _bindablePropertyInfo.SetValue(_associatedObject, targetPropertyValue);
             }
         }
 
@@ -235,7 +239,7 @@ namespace WinRTMultibinding
 
         private object GetDefaultValueForTargetProperty()
         {
-            var propertyType = _targetPropertyInfo.PropertyType;
+            var propertyType = _bindablePropertyInfo.PropertyType;
             var propertyTypeInfo = propertyType.GetTypeInfo();
 
             return propertyTypeInfo.IsValueType
@@ -249,9 +253,9 @@ namespace WinRTMultibinding
             {
                 case BindingMode.OneTime:
                 case BindingMode.OneWay:
-                    return _targetPropertyInfo.CanWrite();
+                    return _bindablePropertyInfo.CanWrite;
                 case BindingMode.TwoWay:
-                    return _targetPropertyInfo.CanRead() && _targetPropertyInfo.CanWrite();
+                    return _bindablePropertyInfo.CanRead && _bindablePropertyInfo.CanWrite;
                 default:
                     throw new ArgumentException("Unknown binding mode.", "mode");
             }
@@ -266,6 +270,18 @@ namespace WinRTMultibinding
         {
             var multiBinding = (MultiBinding)d;
             multiBinding.AssociatedObjectOnTargetPropertyValueChanged();
+        }
+
+        private IBindablePropertyInfo GetBindablePropertyInfo()
+        {
+            if (AttachedPropertyOwnerTypeProvider == null)
+            {
+                return new DependencyPropertyInfo(_associatedObject.GetType(), TargetPropertyPath.Path);
+            }
+            else
+            {
+                return new AttachedPropertyInfo(AttachedPropertyOwnerTypeProvider.GetType(), TargetPropertyPath.Path);
+            }
         }
     }
 }

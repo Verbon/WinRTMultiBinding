@@ -133,7 +133,7 @@ namespace WinRTMultibinding
 
             public override int GetHashCode()
             {
-                return FrameworkElement.GetHashCode() * DependencyProperty.GetHashCode();
+                return FrameworkElement.GetHashCode() ^ DependencyProperty.GetHashCode();
             }
         }
     }
