@@ -41,7 +41,7 @@ namespace WinRTMultibinding.PropertiesInfo
             }
             else
             {
-                PropertyType = null;
+                throw new InvalidOperationException($"Attached property {Name} doesn't have neither getter nor setter.");
             }
         }
 
