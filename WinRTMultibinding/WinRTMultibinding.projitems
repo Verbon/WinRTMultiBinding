@@ -9,21 +9,29 @@
     <Import_RootNamespace>WinRTMultibinding</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)Binding.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)DisableablePropertyChangedCallback.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Disposable\AnonymousDisposable.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Extensions\CollectionExtensions.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Extensions\EventsExtensions.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Extensions\MultiBindingExtensions.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Extensions\PropertyInfoExtensions.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IMultibindingItem.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IMultiValueConverter.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IOneWayMultibindingItem.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IOneWayToSourceMultibindingItem.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)MultiBinding.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)MultiBindingExpression.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)MultiBindingHelper.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)MultiBindingCollection.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Reflection\Reflector.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\Disposable\AnonymousDisposable.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\Extensions\CollectionExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\Extensions\EventsExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\Extensions\PropertyInfoExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\Reflection\Reflector.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Foundation\Data\Binding.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Foundation\Data\BindingHelper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Foundation\Data\MultiBinding.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Foundation\Data\MultiBindingCollection.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Foundation\Data\MultiBindingExpression.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Foundation\Data\MultiBindingHelper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Foundation\DisableablePropertyChangedCallback.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Foundation\PropertyDescriptors\AttachedPropertyDescriptor.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Foundation\PropertyDescriptors\DependencyPropertyDescriptor.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Foundation\PropertyDescriptors\DependencyPropertyDescriptorBase.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Foundation\Extensions\MultiBindingExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Foundation\Extensions\ReflectionExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Foundation\Interfaces\IMultibindingItem.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Foundation\Interfaces\IMultiValueConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Foundation\Interfaces\IOneWayMultibindingItem.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Foundation\Interfaces\IOneWayToSourceMultibindingItem.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Foundation\Interfaces\IDependencyPropertyDescriptor.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Foundation\Interfaces\ITypeProvider.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Foundation\TypeProvider.cs" />
   </ItemGroup>
 </Project>

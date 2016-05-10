@@ -2,7 +2,7 @@ using System;
 using System.Linq;
 using Windows.UI.Xaml.Data;
 
-namespace WinRTMultibinding
+namespace WinRTMultibinding.Foundation.Data
 {
     public class MultiBindingExpression
     {

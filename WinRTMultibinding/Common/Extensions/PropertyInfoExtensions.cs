@@ -1,6 +1,6 @@
 ﻿using System.Reflection;
 
-namespace WinRTMultibinding.Extensions
+namespace WinRTMultibinding.Common.Extensions
 {
     internal static class PropertyInfoExtensions
     {

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace WinRTMultibinding.Extensions
+namespace WinRTMultibinding.Common.Extensions
 {
     internal static class CollectionExtensions
     {

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace WinRTMultibinding.Interfaces
+namespace WinRTMultibinding.Foundation.Interfaces
 {
     internal interface IOneWayToSourceMultibindingItem : IMultibindingItem
     {

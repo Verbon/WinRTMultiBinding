@@ -1,8 +1,8 @@
-using System;
+﻿using System;
 using Windows.UI.Xaml;
-using WinRTMultibinding.Disposable;
+using WinRTMultibinding.Common.Disposable;
 
-namespace WinRTMultibinding
+namespace WinRTMultibinding.Foundation
 {
     internal class DisableablePropertyChangedCallback
     {

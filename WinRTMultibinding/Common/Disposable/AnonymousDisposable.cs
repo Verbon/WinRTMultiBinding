@@ -1,6 +1,6 @@
 using System;
 
-namespace WinRTMultibinding.Disposable
+namespace WinRTMultibinding.Common.Disposable
 {
     internal class AnonymousDisposable : IDisposable
     {
