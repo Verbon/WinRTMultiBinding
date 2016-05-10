@@ -1,6 +1,6 @@
-using System;
+﻿using System;
 
-namespace WinRTMultibinding.Interfaces
+namespace WinRTMultibinding.Foundation.Interfaces
 {
     public interface ITypeProvider
     {

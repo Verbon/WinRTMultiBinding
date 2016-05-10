@@ -1,7 +1,7 @@
 ﻿using Windows.UI.Xaml;
 using Windows.UI.Xaml.Data;
 
-namespace WinRTMultibinding.Interfaces
+namespace WinRTMultibinding.Foundation.Interfaces
 {
     internal interface IMultibindingItem
     {

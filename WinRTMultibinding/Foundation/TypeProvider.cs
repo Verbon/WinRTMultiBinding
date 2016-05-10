@@ -1,7 +1,7 @@
 ﻿using System;
-using WinRTMultibinding.Interfaces;
+using WinRTMultibinding.Foundation.Interfaces;
 
-namespace WinRTMultibinding.Providers
+namespace WinRTMultibinding.Foundation
 {
     public abstract class TypeProvider<T> : ITypeProvider
     {
