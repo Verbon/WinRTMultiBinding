@@ -35,7 +35,7 @@ This library provides you <b>MultiBindingHelper.MultiBindings</b> attached prope
   <TextBlock>
     <m:MultiBindingHelper.MultiBindings>
       <m:MultiBindingCollection>
-        <m:MultiBinding TargetPropertyPath="Text" Converter="{StaticResource MyMultiValueConverter}">
+        <m:MultiBinding TargetProperty="Text" Converter="{StaticResource MyMultiValueConverter}">
           <m:Binding Path="First" Converter="{StaticResource MyConverter}" />
           <m:Binding Path="Second" Source="{StaticResource SomeDataProvider}" />
           <m:Binding Path="Foreground" RelativeSource="{RelativeSource Self}" />
@@ -55,6 +55,7 @@ This library provides you <b>MultiBindingHelper.MultiBindings</b> attached prope
   - FallbackValue
   - Different Modes (OneTime, OneWay, TwoWay)
   - UpdateSourceTrigger
+  - Attached properties binding
 
 ### Restrictions
 
@@ -68,7 +69,7 @@ This library provides you <b>MultiBindingHelper.MultiBindings</b> attached prope
 <TextBlock Text="{Binding Name}">
   <m:MultiBindingHelper.MultiBindings>
     <m:MultiBindingCollection>
-      <m:MultiBinding TargetPropertyPath="Text" Converter="{StaticResourc MyMultiValueConverter}">
+      <m:MultiBinding TargetProperty="Text" Converter="{StaticResourc MyMultiValueConverter}">
         <m:Binding Path="First" />
         <m:Binding Path="Second" />
       </m:MultiBinding>
@@ -81,14 +82,14 @@ In this case `Text="{Binding Name}"` binding will be ignored.
 
 ### Examples
 
-###### Sources
+##### Sources
 As you've seen above WinRTMultiBinding supports different binding sources. <b>But</b>: RelativeSource supports only Self mode.
 
 ```xaml
 <TextBlock>
     <m:MultiBindingHelper.MultiBindings>
       <m:MultiBindingCollection>
-        <m:MultiBinding TargetPropertyPath="Text" Converter="{StaticResource MyMultiValueConverter}">
+        <m:MultiBinding TargetProperty="Text" Converter="{StaticResource MyMultiValueConverter}">
           <m:Binding Path="First" Converter="{StaticResource MyConverter}" />
           <m:Binding Path="Second" Source="{StaticResource SomeDataProvider}" />
           <m:Binding Path="Foreground" RelativeSource="{RelativeSource Self}" />
@@ -99,12 +100,12 @@ As you've seen above WinRTMultiBinding supports different binding sources. <b>Bu
   </TextBlock>
 ```
 
-###### Using StringFormat
+##### Using StringFormat
 ```xaml
 <TextBlock>
   <m:MultiBindingHelper.MultiBindings>
     <m:MultiBindingCollection>
-      <m:MultiBinding TargetPropertyPath="Text" StringFormat="{}{0} - {1}">
+      <m:MultiBinding TargetProperty="Text" StringFormat="{}{0} - {1}">
         <m:Binding Path="First" />
         <m:Binding Path="Second" />
       </m:MultiBinding>
@@ -113,7 +114,7 @@ As you've seen above WinRTMultiBinding supports different binding sources. <b>Bu
 </TextBlock>
 ```
 
-###### Using Converter
+##### Using Converter
 Custom converter must implement <b>IMultiValueConverter</b> interface.
 ```csharp
 public interface IMultiValueConverter
@@ -128,7 +129,7 @@ public interface IMultiValueConverter
 <TextBlock>
   <m:MultiBindingHelper.MultiBindings>
     <m:MultiBindingCollection>
-      <m:MultiBinding TargetPropertyPath="Text" Converter="{StaticResource MyMultiValueConverter}">
+      <m:MultiBinding TargetProperty="Text" Converter="{StaticResource MyMultiValueConverter}">
         <m:Binding Path="First" />
         <m:Binding Path="Second" />
         <m:Binding Path="Third" />
@@ -138,14 +139,14 @@ public interface IMultiValueConverter
 </TextBlock>
 ```
 
-###### Modes
+##### Modes
 MultiBinding's BindingMode(<b>OneWay</b> by default) used as the default value for all the bindings in the collection unless an individual binding overrides this property. For example, if the Mode property on the MultiBinding object is set to TwoWay, then all the bindings in the collection are considered TwoWay unless you set a different Mode value on one of the bindings explicitly. Child bindings can only limit parent Mode, but not vice versa(it's okay to have MultiBinding's Mode set to TwoWay and one of the Bindings Mode set to OneWay, but <b>NOT</b> MultiBinding's Mode set to OneWay and one of the Bindings Mode set to TwoWay).
 
 ```xaml
 <TextBox>
     <m:MultiBindingHelper.MultiBindings>
         <m:MultiBindingCollection>
-            <m:MultiBinding TargetPropertyPath="Text" Mode="TwoWay" Converter="{StaticResource MyMultiValueConverter}">
+            <m:MultiBinding TargetProperty="Text" Mode="TwoWay" Converter="{StaticResource MyMultiValueConverter}">
                 <m:Binding Path="First" />
                 <m:Binding Path="Second" Mode="OneWay" />
                 <m:Binding Path="Third" />
@@ -155,14 +156,14 @@ MultiBinding's BindingMode(<b>OneWay</b> by default) used as the default value f
 </TextBox>
 ```
 
-###### TargetNullValue
+##### TargetNullValue
 If you specify TargetNullValue it's returned when your Converter returns null.
 
 ```xaml
 <TextBlock>
     <m:MultiBindingHelper.MultiBindings>
         <m:MultiBindingCollection>
-            <m:MultiBinding TargetPropertyPath="Text" TargetNullValue="Null value" Converter="{StaticResource MyMultiValueConverter}">
+            <m:MultiBinding TargetProperty="Text" TargetNullValue="Null value" Converter="{StaticResource MyMultiValueConverter}">
                 <m:Binding Path="First" />
                 <m:Binding Path="Second" />
             </m:MultiBinding>
@@ -171,7 +172,7 @@ If you specify TargetNullValue it's returned when your Converter returns null.
 </TextBlock>
 ```
 
-###### FallbackValue
+##### FallbackValue
 If you specify FallbackValue it's returned when:
   - you specified both <b>StringFormat</b> and <b>Converter</b> to target <b>string</b> property
   - your Converter returned null, but TargetNullValue is not specified
@@ -183,7 +184,7 @@ If you did not specify FallbackValue it contains target property type's default 
 <TextBlock>
     <m:MultiBindingHelper.MultiBindings>
         <m:MultiBindingCollection>
-            <m:MultiBinding TargetPropertyPath="Text" FallbackValue="Fallback value" Converter="{StaticResource MyMultiValueConverter}">
+            <m:MultiBinding TargetProperty="Text" FallbackValue="Fallback value" Converter="{StaticResource MyMultiValueConverter}">
                 <m:Binding Path="First" />
                 <m:Binding Path="Second" />
             </m:MultiBinding>
@@ -192,7 +193,7 @@ If you did not specify FallbackValue it contains target property type's default 
 </TextBlock>
 ```
 
-###### UpdateSourceTrigger
+##### UpdateSourceTrigger
 If you chose Default or PropertyChanged, your source value is updated every time target property changes.
 If you chose Explicit:
 
@@ -200,7 +201,7 @@ If you chose Explicit:
 <TextBox x:Name="MyTextBox">
     <m:MultiBindingHelper.MultiBindings>
         <m:MultiBindingCollection>
-            <m:MultiBinding TargetPropertyPath="Text" Mode="TwoWay" Converter="{StaticResource MyMultiValueConverter}"
+            <m:MultiBinding TargetProperty="Text" Mode="TwoWay" Converter="{StaticResource MyMultiValueConverter}"
                             UpdateSourceTrigger="Explicit">
                 <m:Binding Path="First" />
                 <m:Binding Path="Second" />
@@ -217,18 +218,114 @@ var multiBindingExpression = MyTextBox.GetMultiBindingExpression(TextBox.TextPro
 multiBindingExpression.UpdateSource();
 ```
 
-###### Multiple properties binding
+##### Attached properties binding
+To bind to attached property you should specify ```AttachedPropertyOwnerTypeProvider```, and set ```TargetProperty``` to target property name <b>without</b> attached property owner type name. So, binding to ```Grid.Row``` attached property will look as folowing:
+
+```xaml
+<Page xmlns:m="using:WinRTMultibinding">
+  <Page.Resources>
+    <MyMultiValueConverter x:Key="MyMultiValueConverter" />
+    <GridTypeProvider x:Key="GridTypeProvider" />
+  </Page.Resources>
+  
+  <Grid>
+    <Grid.RowDefinitions>
+     <RowDefinition />
+     <RowDefinition />
+     <RowDefinition />
+    </Grid.RowDefinitions>
+    
+    <TextBox Text="Binding to Grid.Row attached property">
+      <m:MultiBindingHelper.MultiBindings>
+        <m:MultiBindingCollection>
+          <m:MultiBinding AttachedPropertyOwnerTypeProvider="{StaticResource GridTypeProvider}" TargetProperty="Row"
+                          Converter="{StaticResource MyMultivalueConverter}" Mode="OneWay">
+            <m:Binding Path="First" />
+            <m:Binding Path="Second" />
+            <m:Binding Path="Third" />
+          </m:MultiBinding>
+        </m:MultiBindingCollection>
+      </m:MultiBindingHelper.MultiBindings>
+    </TextBox>
+  </Grid>
+</Page>
+```
+
+###### Introducing Type Providers
+In the previous example ```GridTypeProvider``` is a class derived from ```TypeProvider<T>``` abstract class. This class has method ```GetType``` which returns the type of its generic type parameter (explicit implementation of ```ITypeProvider``` interface). The only purpose of this class, as you can see, is to provide attached property owner type. You only need to inherit from ```TypeProvider<T>``` with an attached property owner type specified as a generic type parameter, so that later you can use it XAML. ```GridTypeProvider``` might look like this:
+
+```csharp
+public class GridTypeProvider : TypeProvider<Grid>
+{
+
+}
+```
+
+Then you should instantiate it in XAML and pass as a value for ```AttachedPropertyOwnerTypeProvider``` property, as shown in the example above.
+
+###### Type Providers based solution overview
+This awkward and clumsy interface based on type providers might not seem clear at a first glance. But it has the greatest advantage: it's type and assembly independent. This means it allows you to bind not only to built-in controls (such as Grid, Scrollviewer) which have attached properties, but also to custom attached properties hosted by custom types.
+
+For example, if we would like to bind to ```MyAttachedProperty``` property which is hosted by ```MyAttachedPropertyOwner``` class, we should simply derive from ```TypeProvider<T>``` in the following manner:
+
+```csharp
+public class MyAttachedPropertyOwnerTypeProvider : TypeProvider<MyAttachedPropertyOwner>
+{
+
+}
+```
+
+and set it as ```AttachedPropertyOwnerTypeProvider``` for ```MultiBinding``` item:
+
+```xaml
+<Page xmlns:m="using:WinRTMultibinding">
+  <Page.Resources>
+    <MyMultiValueConverter x:Key="MyMultiValueConverter" />
+    <MyAttachedPropertyOwnerTypeProvider x:Key="MyAttachedPropertyOwnerTypeProvider" />
+  </Page.Resources>
+  
+  <Grid>
+    <Grid.RowDefinitions>
+     <RowDefinition />
+     <RowDefinition />
+     <RowDefinition />
+    </Grid.RowDefinitions>
+    
+    <TextBox Text="Binding to Grid.Row attached property">
+      <m:MultiBindingHelper.MultiBindings>
+        <m:MultiBindingCollection>
+          <m:MultiBinding AttachedPropertyOwnerTypeProvider="{StaticResource MyAttachedPropertyOwnerTypeProvider}"
+                          TargetProperty="MyAttachedProperty" Converter="{StaticResource MyMultivalueConverter}" Mode="OneWay">
+            <m:Binding Path="First" />
+            <m:Binding Path="Second" />
+            <m:Binding Path="Third" />
+          </m:MultiBinding>
+        </m:MultiBindingCollection>
+      </m:MultiBindingHelper.MultiBindings>
+    </TextBox>
+  </Grid>
+</Page>
+```
+So this weird interface is payment for allowing you binding to any attached property you want.
+
+Pros:
+  - possibility to bind to any attached property hosted by any type
+
+Cons:
+  - cumbersome, clumsy interface (which is fixable by good code styles, naming conventions etc.)
+
+##### Multiple properties binding
 Simply add several <b>MultiBinding</b> items to <b>MultiBindingCollection</b>.
 
 ```xaml
 <TextBox>
     <m:MultiBindingHelper.MultiBindings>
         <m:MultiBindingCollection>
-            <m:MultiBinding TargetPropertyPath="Text" Converter="{StaticResource MyMultiValueConverter}">
+            <m:MultiBinding TargetProperty="Text" Converter="{StaticResource MyMultiValueConverter}">
               <m:Binding Path="First" />
               <m:Binding Path="Second" />
             </m:MultiBinding>
-            <m:MultiBinding TargetPropertyPath="FontSize" Converter="{StaticResource MyAnotherMultiValueConverter}">
+            <m:MultiBinding TargetProperty="FontSize" Converter="{StaticResource MyAnotherMultiValueConverter}">
               <m:Binding Path="Third" />
               <m:Binding Path="Fourth" />
         </m:MultiBindingCollection>
