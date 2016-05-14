@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using System.Resources;
 using System.Runtime.InteropServices;
 
 // General Information about an assembly is controlled through the following 
@@ -8,7 +9,8 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyDescription("Provides MultiBinding functionality for Windows 8.1 and Windows Phone 8.1 projects.")]
 [assembly: AssemblyProduct("WinRTMultibinding.Windows")]
 [assembly: AssemblyCopyright("Copyright ©  2015")]
-[assembly: AssemblyCulture("en-US")]
+[assembly: AssemblyCulture("")]
+[assembly: NeutralResourcesLanguage("en-US")]
 
 // Version information for an assembly consists of the following four values:
 //
