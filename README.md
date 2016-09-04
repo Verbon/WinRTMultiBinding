@@ -37,7 +37,7 @@ Install-Package WinRT-Multibinding-WindowsPhone
 This library provides you <b>MultiBindingHelper.MultiBindings</b> attached property which you should initialize with a <b>MultiBindingCollection</b> instance which you should populate with <b>MultiBinding</b> items. Instance of <b>MultiBinding</b> class hosts <b>Binding</b> items.
 
 ```xaml
-<Page xmlns:m="using:WinRTMultibinding">
+<Page xmlns:m="using:WinRTMultibinding.Foundation.Data">
   <Page.Resources>
     <MyMultiValueConverter x:Key="MyMultiValueConverter" />
     <MyConverter x:Key="MyConverter" />
@@ -236,7 +236,7 @@ multiBindingExpression.UpdateSource();
 To bind to attached property you should specify ```AttachedPropertyOwnerTypeProvider```, and set ```TargetProperty``` to target property name <b>without</b> attached property owner type name. So, binding to ```Grid.Row``` attached property will look as folowing:
 
 ```xaml
-<Page xmlns:m="using:WinRTMultibinding">
+<Page xmlns:m="using:WinRTMultibinding.Foundation.Data">
   <Page.Resources>
     <MyMultiValueConverter x:Key="MyMultiValueConverter" />
     <GridTypeProvider x:Key="GridTypeProvider" />
@@ -292,7 +292,7 @@ public class MyAttachedPropertyOwnerTypeProvider : TypeProvider<MyAttachedProper
 and set it as ```AttachedPropertyOwnerTypeProvider``` for ```MultiBinding``` item:
 
 ```xaml
-<Page xmlns:m="using:WinRTMultibinding">
+<Page xmlns:m="using:WinRTMultibinding.Foundation.Data">
   <Page.Resources>
     <MyMultiValueConverter x:Key="MyMultiValueConverter" />
     <MyAttachedPropertyOwnerTypeProvider x:Key="MyAttachedPropertyOwnerTypeProvider" />
