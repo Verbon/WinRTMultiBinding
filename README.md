@@ -1,11 +1,23 @@
 # WinRTMultiBinding
-Provides MultiBinding functionality for Windows 8.1 and Windows Phone 8.1 projects.
+Provides MultiBinding functionality for Windows 8.1, Windows Phone 8.1, Windows 10 UWP projects.
 
 WinRT MultiBinding supports most of WPF MultiBinding's features.
 
 ### Installation via NuGet package
 
-This library is availabe as NuGet packages for Windows and Windows Phone projects:
+This portable library is available as NuGet package for Windows 8.1, Windows Phone 8.1, Windows 10 UWP projects:
+
+https://www.nuget.org/packages/WinRTMultibinding/
+
+Use Package Manager to install package or type the following into the Package Manager Console:
+
+```
+Install-Package WinRTMultibinding
+```
+
+#### Installing obsolete packages
+
+This library is also available as obsolete NuGet packages for Windows and Windows Phone projects:
 
 https://www.nuget.org/packages/WinRT-Multibinding-Windows/
 
@@ -18,6 +30,8 @@ Install-Package WinRT-Multibinding-Windows
 
 Install-Package WinRT-Multibinding-WindowsPhone
 ```
+
+<b>NOTE:</b> As these packages are obsolete, they are no longer supported. So, you should better install portable library version described above for use in your Windows 8.1/Windows Phone 8.1 projects.
 
 ### General
 This library provides you <b>MultiBindingHelper.MultiBindings</b> attached property which you should initialize with a <b>MultiBindingCollection</b> instance which you should populate with <b>MultiBinding</b> items. Instance of <b>MultiBinding</b> class hosts <b>Binding</b> items.
@@ -252,7 +266,7 @@ To bind to attached property you should specify ```AttachedPropertyOwnerTypeProv
 ```
 
 ###### Introducing Type Providers
-In the previous example ```GridTypeProvider``` is a class derived from ```TypeProvider<T>``` abstract class. This class has method ```GetType``` which returns the type of its generic type parameter (explicit implementation of ```ITypeProvider``` interface). The only purpose of this class, as you can see, is to provide attached property owner type. You only need to inherit from ```TypeProvider<T>``` with an attached property owner type specified as a generic type parameter, so that later you can use it XAML. ```GridTypeProvider``` might look like this:
+In the previous example ```GridTypeProvider``` is a class derived from ```TypeProvider<T>``` abstract class. This class has method ```GetType``` which returns the type of its generic type parameter (explicit implementation of ```ITypeProvider``` interface). The only purpose of this class, as you can see, is to provide attached property owner type. You only need to inherit from ```TypeProvider<T>``` with an attached property owner type specified as a generic type parameter, so that later you can use it in XAML. ```GridTypeProvider``` might look like this:
 
 ```csharp
 public class GridTypeProvider : TypeProvider<Grid>
