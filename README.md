@@ -7,12 +7,12 @@ WinRT MultiBinding supports most of WPF MultiBinding's features.
 
 This portable library is available as NuGet package for Windows 8.1, Windows Phone 8.1, Windows 10 UWP projects:
 
-https://www.nuget.org/packages/WinRTMultibinding/
+https://www.nuget.org/packages/WinRTMultibinding.Universal/1.0.0
 
 Use Package Manager to install package or type the following into the Package Manager Console:
 
 ```
-Install-Package WinRTMultibinding
+Install-Package WinRTMultibinding.Universal
 ```
 
 #### Installing obsolete packages
